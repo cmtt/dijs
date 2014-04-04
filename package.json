@@ -1,7 +1,7 @@
 {
   "name": "dijs",
   "version": "0.0.0",
-  "description": "Dependency injection",
+  "description": "Dependency injection/Namespaces",
   "main": "lib/di.js",
   "scripts": {
     "test": "grunt mocha"

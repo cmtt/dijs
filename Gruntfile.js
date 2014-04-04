@@ -3,7 +3,6 @@ var path = require('path')
   , LIB_PATH = path.join(PUBLIC_PATH, 'lib');
 
 module.exports = function(grunt) {
-
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
@@ -11,7 +10,6 @@ module.exports = function(grunt) {
     jshint : {
       files: ['Gruntfile.js', 'lib/**/*.js'],
       options: {
-        // options here to override JSHint defaults
         laxcomma : true,
         globals: {
           console: true,
