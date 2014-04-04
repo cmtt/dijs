@@ -4,7 +4,7 @@ describe('Dependency injection', function () {
   var reader = [function () {
     return {
       read : function (start, end) {
-        return true;
+        return [start,'-', end].join('');
       }
     }
   }];
@@ -78,7 +78,7 @@ describe('Dependency injection', function () {
   })
 
   it ('creates a namespace', function () {
-    var mod = new Di();
+    var mod = new Di('ns');
     var address = { street : 'Plan 7' };
     mod.provide('price', Price, true);
     mod.provide('store.shelf', Shelf);
@@ -86,6 +86,12 @@ describe('Dependency injection', function () {
     assert.ok(_.isFunction(mod.price));
     assert.ok(_.isObject(mod.store));
     assert.ok(_.isArray(mod.store.shelf));
+    assert.ok(_.isFunction(mod.get('price')));
+    assert.ok(_.isObject(mod.get('store')));
+    assert.ok(_.isArray(mod.get('store.shelf')));
+    assert.ok(_.isFunction(mod.get('ns.price')));
+    assert.ok(_.isObject(mod.get('ns.store')));
+    assert.ok(_.isArray(mod.get('ns.store.shelf')));
     assert.equal(mod.store.shelf.length, 0);
     assert.deepEqual(mod.store.address, address);
   })
@@ -117,11 +123,9 @@ describe('Dependency injection', function () {
 
     mod.provide('read', function (utilReader) {
       return function () {
-        utilReader.read(0,1).then(function () {
-          done();
-        }, function () {
-          throw new Error('Promise should be resolved');
-        });
+        var val = utilReader.read(0,1);
+        assert.equal(val,'0-1');
+        done()
       }
     });
 
@@ -225,12 +229,9 @@ describe('Dependency injection', function () {
     var mod = new Di();
 
     var fn = ['util.reader', function (reader) {
-      reader.read(0,1).then(function (content) {
-        assert.equal(content,'0-1');
-        done();
-      }, function () {
-        throw new Error('Reader promise rejected');
-      });
+      var val = reader.read(0,1);
+      assert.equal(val,'0-1');
+      done();
     }];
 
     mod.provide('util.reader', reader);

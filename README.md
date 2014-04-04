@@ -4,6 +4,8 @@ Dijs
 Dijs is a small dependency injection module for Node.js and browser environments. It was inspired
 by [AngularJS](http://www.angularjs.org/).
 
+Dependency injection might be a useful pattern to organize larger projects.
+
 # Usage
 
 ````js
@@ -52,18 +54,17 @@ by [AngularJS](http://www.angularjs.org/).
   // Total value 33
   console.log('Total value', mod.store.shelf.totalSum());
 
-
 ````
 
-## Reference
+# Reference
 
-# new Di (moduleId, lazy)
+## new Di (moduleId, lazy)
 
 Creates a new namespace. When a module id is defined, all sub-modules are available with this
 prefix. When lazy is set to true, you will need to call resolve() manually to resolve the
 dependency graph which might be useful for application initialization.
 
-# Di.provide(id, object, passthrough)
+## Di.provide(id, object, passthrough)
 
 Provides a module in the namespace under the supplied id. If passthrough is true, the object will
 be passed without any dependency lookup.
@@ -84,7 +85,7 @@ console.log(mod.get('module'));
 
 In order to provide a module with dependencies, two notations can be used:
 
-## function notation
+### function notation
 
 Each function parameter represents a dependency. You cannot inject dot-delimited dependencies in
 this notation.
@@ -95,7 +96,7 @@ mod.provide('Pi',Math.PI, true);
 mod.provide('2Pi', function (Pi) { return 2*Pi; });
 ````
 
-## array notation (AngularJS minification safe)
+### array notation
 
 A module is represented as array with uneven length. Dependencies are represented by strings, the
 actual module function must be the last value of the array. You can also inject dot-delimited
@@ -112,7 +113,7 @@ mod.provide('2Pi', ['Math.Pi', function (Pi) {
 
 ````
 
-# Di.resolve()
+## Di.resolve()
 
 Resolves the current queue. You will need to call this function after all provide() calls if you
 have defined the namespace with the lazy parameter.
@@ -132,17 +133,17 @@ mod.provide('Log',console.log.bind(console), true);
 mod.resolve();
 ````
 
-# Di.inject(fn)
+## Di.inject(fn)
 
 Resolves all dependencies of the supplied function or array and calls the function. No modification
 of the namespace takes place.
 
-# Di.run(fn)
+## Di.run(fn, args...)
 
-Resolves all dependencies of the supplied function or array, calls the function and returns the
-return value. No modification of the namespace takes place.
+Resolves all dependencies of the supplied function or array, calls the function with the supplied
+arguments, returns its return value. No modification of the namespace takes place.
 
-# Di.get(id)
+## Di.get(id)
 
 Returns the (previously declared) module specified by id.
 
