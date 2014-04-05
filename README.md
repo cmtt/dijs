@@ -159,8 +159,9 @@ $ grunt mocha
 ````
 
 # Build
-In addition, you can create a minified build with Google's Closure compiler. This might save you
-a few bytes - Dijs is currently below 2 KB minified.
+A minified version (1916 bytes, 911 bytes gzipped) is included in the build/ directory.
+
+In addition, you can create a minified build with Google's Closure compiler by yourself.
 
 Please refer to gmarty's [grunt-closure-compiler](https://github.com/gmarty/grunt-closure-compiler)
 for further information about installation of this requirement.
