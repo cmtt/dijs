@@ -51,10 +51,12 @@ In addition, please refer to the tests in the spec/ folder.
   mod.provide('price', Price, true);
   mod.provide('store.shelf', Shelf);
   mod.provide('store.address', { street : 'Plan 7' }, true);
+  mod.store.shelf.addBook('1984', 3,'Euro');
   mod.store.shelf.addBook('Lord of the rings', 30,'Euro');
-  mod.store.shelf.addBook('1981', 3,'Euro');
+  mod.store.shelf.addBook('Modernist cuisine', 55,'Euro');
+  assert.equal(mod.store.shelf.length, 3);
 
-  // Total value 33
+  // Total value 88
   console.log('Total value', mod.store.shelf.totalSum());
 
 ````

@@ -4,6 +4,10 @@
   "authors": [
     "Matthias Thoemmes <git@gmx.org>"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cmtt/dijs.git"
+  },
   "description": "Dependency injection, lazy graph resolution",
   "main": "lib/di.js",
   "keywords": [

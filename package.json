@@ -7,6 +7,10 @@
     "test": "grunt mocha"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cmtt/dijs.git"
+  },
   "license": "WTFPL",
   "dependencies": {
     "lodash": "^2.4.1",
