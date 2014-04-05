@@ -2,7 +2,7 @@ Dijs
 ----
 
 Dijs is a small dependency injection module for Node.js and browser environments. It was inspired
-by [AngularJS](http://www.angularjs.org/).
+by [AngularJS](http://www.angularjs.org/) and includes rudimentary namespace support.
 
 Dependency injection might be a useful pattern to organize larger projects.
 
