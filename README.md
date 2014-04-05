@@ -2,11 +2,14 @@ Dijs
 ----
 
 Dijs is a small dependency injection module for Node.js and browser environments. It was inspired
-by [AngularJS](http://www.angularjs.org/) and includes rudimentary namespace support.
+by [AngularJS](http://www.angularjs.org/), includes rudimentary namespace support and lazy
+dependency resolution.
 
-Dependency injection might be a useful pattern to organize larger projects.
+Dependency injection might be a useful pattern to organize larger projects. As injection happens
+only once to compose a namespace, there shouldn't be drawbacks in performance.
 
 # Usage
+In addition, please refer to the tests in the spec/ folder.
 
 ````js
 
@@ -20,7 +23,7 @@ Dependency injection might be a useful pattern to organize larger projects.
       toString : function () {
         return this.value + ' ' + this.currency;
       }
-    }
+    };
   }
 
   function Shelf (price) {
@@ -60,18 +63,15 @@ Dependency injection might be a useful pattern to organize larger projects.
 
 ## new Di (moduleId, lazy)
 
-Creates a new namespace. When a module id is defined, all sub-modules are available with this
-prefix. When lazy is set to true, you will need to call resolve() manually to resolve the
-dependency graph which might be useful for application initialization.
+Creates a new namespace. The module id serves as optional prefix for sub-modules.
+
+In lazy mode, resolve() must be called manually to resolve the dependency graph. This might be
+useful for application initialization, as the order of provided modules is irrelevant in this case.
 
 ## Di.provide(id, object, passthrough)
 
 Provides a module in the namespace under the supplied id. If passthrough is true, the object will
-be passed without any dependency lookup.
-
-If passthrough is not set, you can choose between the function and the array notation. In any case,
-the function parameters are the declared dependencies. Its return value will be stored in the
-namespace.
+be just passed through, no dependencies are looked up this way.
 
 Sub-modules can be provided with the dot delimiter:
 
@@ -83,12 +83,14 @@ mod.provide('module.submodule.value', 1, true);
 console.log(mod.get('module'));
 ````
 
-In order to provide a module with dependencies, two notations can be used:
+If you don't pass a value through, you can choose between the function and the array notation to
+describe the module's dependencies. In any case, you will need to pass a function whose return value
+gets stores in the namespace. Its parameters describe its dependencies.
 
 ### function notation
 
-Each function parameter represents a dependency. You cannot inject dot-delimited dependencies in
-this notation.
+Each function parameter represents a dependency.
+Note that you cannot inject dot-delimited dependencies with this notation.
 
 ````js
 var mod = new Di();
@@ -99,8 +101,9 @@ mod.provide('2Pi', function (Pi) { return 2*Pi; });
 ### array notation
 
 A module is represented as array with uneven length. Dependencies are represented by strings, the
-actual module function must be the last value of the array. You can also inject dot-delimited
-dependencies.
+actual module function must be the last value of the array.
+You can also inject dot-delimited dependencies and use different variable names for dependencies
+with this notation.
 
 ````js
 var mod = new Di();
@@ -110,27 +113,6 @@ mod.provide('2Pi', ['Math.Pi', function (Pi) {
     return 2*Pi;
   };
 }]);
-
-````
-
-## Di.resolve()
-
-Resolves the current queue. You will need to call this function after all provide() calls if you
-have defined the namespace with the lazy parameter.
-
-Please note that all subsequent calls to provide/inject and run will resolve the dependency graph
-immediately.
-
-````js
-var mod = new Di('namespace', true);
-mod.provide('2Pi', ['Math.Pi', 'Log', function (Pi, Log) {
-  return function () {
-    Log(2*Pi);
-  }
-}]);
-mod.provide('Math.Pi',Math.PI, true);
-mod.provide('Log',console.log.bind(console), true);
-mod.resolve();
 ````
 
 ## Di.inject(fn)
@@ -146,6 +128,46 @@ arguments, returns its return value. No modification of the namespace takes plac
 ## Di.get(id)
 
 Returns the (previously declared) module specified by id.
+
+## Di.resolve()
+
+Resolves the dependency graph. This function gets called internally when lazy dependency resolution
+is turned off, but it must be called if the namespace is initialized in lazy mode.
+
+All subsequent calls to provide/inject and run will resolve the dependency graph immediately.
+
+````js
+var mod = new Di('namespace', true);
+mod.provide('2Pi', ['Math.Pi', 'Log', function (Pi, Log) {
+  return function () {
+    Log(2*Pi);
+  }
+}]);
+mod.provide('Math.Pi',Math.PI, true);
+mod.provide('Log',console.log.bind(console), true);
+mod.resolve();
+````
+
+# Testing
+
+To install all Node.js dependencies and run the unit tests, execute the following commands:
+````
+$ npm install
+$ grunt mocha
+````
+
+# Build
+In addition, you can create a minified build with Google's Closure compiler. This might save you
+a few bytes - Dijs is currently below 2 KB minified.
+
+Please refer to gmarty's [grunt-closure-compiler](https://github.com/gmarty/grunt-closure-compiler)
+for further information about installation of this requirement.
+
+After installation, execute:
+
+````
+$ grunt minify
+````
 
 # Licence
 

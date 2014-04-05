@@ -103,10 +103,11 @@ describe('Dependency injection', function () {
     mod.provide('store.shelf', Shelf);
     mod.provide('store.address', address, true);
 
+    mod.store.shelf.addBook('1984', 3,'Euro');
     mod.store.shelf.addBook('Lord of the rings', 30,'Euro');
-    mod.store.shelf.addBook('1981', 3,'Euro');
-    assert.equal(mod.store.shelf.length, 2);
-    assert.equal(mod.store.shelf.totalSum(), 33);
+    mod.store.shelf.addBook('Modernist cuisine', 55,'Euro');
+    assert.equal(mod.store.shelf.length, 3);
+    assert.equal(mod.store.shelf.totalSum(), 88);
   })
 
   it('provides arrays', function () {
@@ -124,7 +125,7 @@ describe('Dependency injection', function () {
     mod.provide('read', function (utilReader) {
       return function () {
         var val = utilReader.read(0,1);
-        assert.equal(val,'0-1');
+        assert.equal(val, '0-1');
         done()
       }
     });
@@ -179,9 +180,11 @@ describe('Dependency injection', function () {
   })
 
   it ('provides objects as members of the module', function () {
-    var mod = new Di();
+    var mod = new Di('namespace');
     mod.provide('PI2',Math.PI*2)
     assert.equal(mod.PI2, Math.PI*2);
+    assert.equal(mod.get('PI2'), Math.PI*2);
+    assert.equal(mod.get('namespace.PI2'), Math.PI*2);
   })
 
   it ('allows to inject a function', function (done) {
@@ -275,7 +278,6 @@ describe('Dependency injection', function () {
     assert.throws(mod.resolve, 'Circular reference detected: test -> test');
   })
 
-
   it ('can initialize in a lazy way with namespaces', function () {
     var mod = new Di(null, true);
 
@@ -296,8 +298,6 @@ describe('Dependency injection', function () {
     assert.ok(mod.ntimes);
     assert.ok(mod.math.twice);
   })
-
-
 
   it ('can inject functions and provides modules after resolve()', function () {
     var mod = new Di(null, true);
@@ -389,7 +389,7 @@ describe('Dependency injection', function () {
   })
 
 
-  it ('can resolve a simple application', function () {
+  it ('can compose a simple application', function () {
     var _server = new Di('TransporterServer');
 
     _server.provide('frame', { e : function () {} })
@@ -404,11 +404,10 @@ describe('Dependency injection', function () {
     assert.ok(_server.http);
     assert.ok(_server.Flags);
     assert.ok(_server.Ev);
-
   })
 
 
-  it ('can resolve a simple application (lazy)', function () {
+  it ('can compose a simple application (lazy)', function () {
     var _server = new Di('TransporterServer', true);
 
     _server.provide('frame', { e : function () {} })
@@ -433,7 +432,7 @@ describe('Dependency injection', function () {
     assert.ok(_server.Ev);
   })
 
-  it ('can resolve a simple app and provide() afterwards directly', function () {
+  it ('can compose a simple application, provides() afterwards w/o resolving', function () {
     var _server = new Di('TransporterServer', true);
 
     _server.provide('frame', { e : function () {} })
