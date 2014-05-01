@@ -1,7 +1,37 @@
 describe('Injection', function () {
 
+
+  it('injects dependencies by function call', function () {
+    var mod = Di();
+    mod.provide('sprintf', util.format, true);
+    assert.ok(_.isFunction(mod.sprintf));
+
+    mod.provide('util.reader', function (sprintf) {
+      return {
+        read : function (start, end) { return sprintf('%d-%d', start, end); }
+      };
+    });
+    assert.ok(_.isObject(mod.util.reader));
+    assert.ok(_.isFunction(mod.util.reader.read));
+    assert.equal(mod.util.reader.read(0,88),'0-88');
+  })
+
+  it('injects dependencies by minification-safe syntax', function () {
+    var mod = Di();
+    mod.provide('sprintf', util.format, true); // _passthru === true
+    mod.provide('util.reader', ['sprintf',function (sprintf) {
+      return {
+        read : function (start, end) { return sprintf('%d-%d', start, end); }
+      };
+    }]);
+    assert.ok(_.isObject(mod.util.reader));
+    assert.ok(_.isFunction(mod.util.reader.read));
+    assert.equal(mod.util.reader.read(0,88),'0-88');
+  })
+
+
   it ('allows to inject a function', function (done) {
-    var mod = new Di();
+    var mod = Di();
     mod.provide('twice',function () {
       return function (i) { return i*2; };
     });
@@ -14,7 +44,7 @@ describe('Injection', function () {
   })
 
   it ('allows to inject an array', function (done) {
-    var mod = new Di();
+    var mod = Di();
     mod.provide('twice',function () {
       return function (i) { return i*2; };
     });
@@ -32,8 +62,8 @@ describe('Injection', function () {
   });
 
 
-  it ('allows to inject items with different names (arrays)', function (done) {
-    var mod = new Di();
+  it ('allows to inject dependencies with different variable names', function (done) {
+    var mod = Di();
 
     var fn = ['util.sprintf', function (sprintf) {
       var val = sprintf('This is %s number %d','test',3);
@@ -49,26 +79,49 @@ describe('Injection', function () {
 
 
   it ('can inject functions with arguments', function (done) {
-    var mod = new Di();
-    var myFunction =  function () {
+    var mod = Di();
+
+    var myFunction = function () {
       for (var i = 1; i < 5; ++i)  assert.equal(arguments[i-1],i);
-       done();
+      done();
     };
     mod.inject(myFunction, 1,2,3,4);
   })
 
-  it ('can inject functions with arguments in a lazy way', function (done) {
-    var mod = new Di(null, true);
-    var myFunction =  function () {
-      for (var i = 1; i < 5; ++i)  assert.equal(arguments[i-1],i);
-       done();
+  it ('can inject functions with dependencies and additional arguments', function (done) {
+    var mod = Di();
+    mod.provide('sprintf', util.format, true);
+
+    var myFunction = function (sprintf) {
+      var args = _.chain(arguments)
+                  .toArray()
+                  .slice(1)
+                  .unshift('%d to %d to %d to %d')
+                  .value();
+
+      assert.equal(sprintf.apply(sprintf, args), '1 to 2 to 3 to 4');
+      done();
     };
     mod.inject(myFunction, 1,2,3,4);
-    setTimeout(function () {
-      mod.resolve();
-    },10)
   })
 
+
+  it ('can inject functions with dependencies and additional arguments (minification-safe syntax)', function (done) {
+    var mod = Di();
+    mod.provide('sprintf', util.format, true);
+
+    var myFunction = function (sprintf) {
+      var args = _.chain(arguments)
+                  .toArray()
+                  .slice(1)
+                  .unshift('%d to %d to %d to %d')
+                  .value();
+
+      assert.equal(sprintf.apply(sprintf, args), '1 to 2 to 3 to 4');
+      done();
+    };
+    mod.inject(['sprintf', myFunction], 1,2,3,4);
+  })
 
 
 })

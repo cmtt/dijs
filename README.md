@@ -47,7 +47,7 @@ In addition, please refer to the tests in the spec/ folder.
     return items;
   }
 
-  var mod = new Di();
+  var mod = Di();
   mod.provide('price', Price, true);
   mod.provide('store.shelf', Shelf);
   mod.provide('store.address', { street : 'Plan 7' }, true);
@@ -63,7 +63,7 @@ In addition, please refer to the tests in the spec/ folder.
 
 # Reference
 
-## new Di (moduleId, lazy)
+## Di (moduleId, lazy)
 
 Creates a new namespace. The module id serves as optional prefix for sub-modules.
 
@@ -78,7 +78,7 @@ be just passed through, no dependencies are looked up this way.
 Sub-modules can be provided with the dot delimiter:
 
 ````js
-var mod = new Di();
+var mod = Di();
 mod.provide('module.submodule.value', 1, true);
 
 // { submodule : { value : 1 } }
@@ -95,7 +95,7 @@ Each function parameter represents a dependency.
 Note that you cannot inject dot-delimited dependencies with this notation.
 
 ````js
-var mod = new Di();
+var mod = Di();
 mod.provide('Pi',Math.PI, true);
 mod.provide('2Pi', function (Pi) { return 2*Pi; });
 ````
@@ -108,7 +108,7 @@ You can also inject dot-delimited dependencies and use different variable names 
 with this notation.
 
 ````js
-var mod = new Di();
+var mod = Di();
 mod.provide('Math.Pi',Math.PI, true);
 mod.provide('2Pi', ['Math.Pi', function (Pi) {
   return function () {
@@ -119,13 +119,13 @@ mod.provide('2Pi', ['Math.Pi', function (Pi) {
 
 ## Di.inject(fn)
 
-Resolves all dependencies of the supplied function or array and calls the function. No modification
-of the namespace takes place.
+Resolves all dependencies of the supplied function or array and calls the function.
+No modification of the namespace takes place.
 
 ## Di.run(fn, args...)
 
 Resolves all dependencies of the supplied function or array, calls the function with the supplied
-arguments, returns its return value. No modification of the namespace takes place.
+arguments and _returns its return value_. No modification of the namespace takes place.
 
 ## Di.get(id)
 
@@ -139,7 +139,7 @@ is turned off, but it must be called if the namespace is initialized in lazy mod
 All subsequent calls to provide/inject and run will resolve the dependency graph immediately.
 
 ````js
-var mod = new Di('namespace', true);
+var mod = Di('namespace', true);
 mod.provide('2Pi', ['Math.Pi', 'Log', function (Pi, Log) {
   return function () {
     Log(2*Pi);
@@ -172,18 +172,31 @@ After installation, execute:
 $ grunt minify
 ````
 
+# Changelog
+
+0.0.2 - 04/01/2014
+
+- tests splitted
+- updated usage examples
+- updated documentation
+
+0.0.1 - 04/04/2014
+
+Initial release.
+
 # Licence
+````
+          DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+                      Version 2, December 2004
 
-        DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                    Version 2, December 2004
+   Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
 
- Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+   Everyone is permitted to copy and distribute verbatim or modified
+   copies of this license document, and changing it is allowed as long
+   as the name is changed.
 
- Everyone is permitted to copy and distribute verbatim or modified
- copies of this license document, and changing it is allowed as long
- as the name is changed.
+              DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
-            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-
-  0. You just DO WHAT THE FUCK YOU WANT TO.
+    0. You just DO WHAT THE FUCK YOU WANT TO.
+````

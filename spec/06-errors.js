@@ -1,17 +1,17 @@
 describe('Errors', function () {
 
   it ('throws an error when a dependency cannot be resolved', function () {
-    var mod = new Di();
+    var mod = Di();
     var _testFunction = function () {
       mod.provide('test', function (unknownDependency) {
         throw new Error('unknownDependency resolved');
       });
     };
-    assert.throws(_testFunction, 'could not resolve "unknownDependency"');
+    assert.throws(_testFunction, 'Not found: "unknownDependency"');
   })
 
   it ('throws an error in case of circular dependencies', function () {
-    var mod = new Di('test');
+    var mod = Di('test');
     var _testFunction = function () {
       mod.provide('unknownDependency', function () {
         return true;
@@ -20,11 +20,11 @@ describe('Errors', function () {
         return true;
       });
     };
-    assert.throws(_testFunction, 'Circular reference detected: test -> test');
+    assert.throws(_testFunction, 'Circular: test -> test');
   })
 
   it ('does not throw an error with correct syntax', function (done) {
-    var mod = new Di();
+    var mod = Di();
     var _testFunction = function () {
       mod.provide('test',[function (unknownDependency) {
         return 'ok';
@@ -34,6 +34,12 @@ describe('Errors', function () {
     var unknownDependency = mod.get('test');
     assert.equal(unknownDependency,'ok');
     done()
+  })
+
+  it ('does not throw an error when a function is declared in one line', function () {
+    var mod = Di();
+    mod.provide('fn',function () { return function () {}; });
+    mod.provide('fn2',function (fn) { return fn });
   })
 
 })

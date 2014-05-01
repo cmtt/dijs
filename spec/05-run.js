@@ -1,7 +1,7 @@
 describe('Di.run', function () {
 
   it ('can run functions with arguments and get its return value (never lazy)', function (done) {
-    var mod = new Di(null, true);
+    var mod = Di(null, true);
     var myFunction =  function (twice) {
       return function (a) {
         return twice(a) * 2;

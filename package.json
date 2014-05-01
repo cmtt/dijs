@@ -1,10 +1,11 @@
 {
   "name": "dijs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Dependency injection",
   "main": "lib/di.js",
   "scripts": {
-    "test": "grunt mocha"
+    "test": "grunt mocha",
+    "prepublish" : "grunt minify"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
   "repository": {
@@ -12,7 +13,7 @@
     "url": "git://github.com/cmtt/dijs.git"
   },
   "license": "WTFPL",
-  "dependencies": {
+  "devDependencies": {
     "lodash": "^2.4.1",
     "grunt-mocha-test": "^0.10.0",
     "grunt-contrib-watch": "^0.6.1",
