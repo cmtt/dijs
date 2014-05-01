@@ -21,6 +21,6 @@ describe('Di.run', function () {
       },20);
       assert.equal(val, 80);
       done();
-    },100);
+    },10);
   })
 })

@@ -113,7 +113,7 @@ describe('Usage examples', function () {
                 return {
                   add : function (id) {
                     var book = shelf.getBook(id);
-                    if (!book) return log('"%s" is not available here', id);
+                    if (!book) return log('"%s" is not in our line', id);
                     items.push(book);
                     log('"%s" added to basket, total sum %d', id, this.totalSum())
                   },
@@ -149,7 +149,7 @@ describe('Usage examples', function () {
     basket.add('Modernist cuisine');
 
     var fixtures = [
-      '"Unknown book" is not available here',
+      '"Unknown book" is not in our line',
       '"1984" added to basket, total sum 3',
       '"Lord of the rings" added to basket, total sum 33',
       '"Modernist cuisine" added to basket, total sum 88'
@@ -183,27 +183,4 @@ describe('Usage examples', function () {
     assert.ok(_server.Ev);
   })
 
-  // it ('can compose a simple application, provides() afterwards w/o resolving', function () {
-  //   var _server = Di('TransporterServer', true);
-
-  //   _server.provide('frame', { e : function () {} })
-  //          .provide('log',console.log, true)
-  //          .provide('connectHandlers',[{id : 1},{id : 2}],true)
-  //          .provide('http', require('http'), true)
-  //          .provide('Flags', {}, true)
-  //          .provide('Ev', {}, true);
-
-  //   _server.resolve();
-  //   assert.ok(_server.frame);
-  //   assert.ok(_server.log);
-  //   assert.ok(_server.connectHandlers);
-  //   assert.ok(_server.http);
-  //   assert.ok(_server.Flags);
-  //   assert.ok(_server.Ev);
-  //   assert.ok(!_server.provided);
-  //   _server.provide('provided', ['frame',function (frame) {
-  //     return { true : frame};
-  //   }])
-  //   assert.ok(_server.provided);
-  // })
 });

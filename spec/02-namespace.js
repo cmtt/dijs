@@ -75,8 +75,11 @@ describe('Namespace', function () {
     mod.provide('util.string.format', util.format, true);
     mod.provide('util.string.inspect', util.inspect, true);
     mod.provide('util.math.PI', Math.PI);
+
     assert.ok(_.isObject(mod.util));
     assert.ok(_.isObject(mod.util.string));
+
+    assert.equal(mod.get('NS'), mod);
 
     assert.deepEqual(mod.util.string.format, util.format);
     assert.deepEqual(mod.get('util.string.format'), util.format);

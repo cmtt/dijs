@@ -1,6 +1,6 @@
-var path = require('path')
-  , PUBLIC_PATH = path.join(__dirname,'build')
-  , LIB_PATH = path.join(PUBLIC_PATH, 'lib');
+var path = require('path');
+var PUBLIC_PATH = path.join(__dirname,'build');
+var LIB_PATH = path.join(PUBLIC_PATH, 'lib');
 
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -9,13 +9,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-closure-compiler');
   grunt.initConfig({
     'jshint' : {
-      files: ['Gruntfile.js', 'lib/**/*.js'],
-      options: {
-        laxcomma : true
-      }
+      files: ['Gruntfile.js', 'lib/**/*.js']
     },
     'watch' : {
-      files : ['spec/**/*.js','lib/**/*.js'],
+      files : ['Gruntfile.js','spec/**/*.js','lib/**/*.js'],
       tasks : ['default'],
       options : {
         interrupt : true,
@@ -37,7 +34,6 @@ module.exports = function(grunt) {
         maxBuffer: 500,
         options: {
           compilation_level: 'ADVANCED_OPTIMIZATIONS',
-          language_in: 'ECMASCRIPT5_STRICT',
           externs: 'contrib/di-externs.js'
         }
       }
