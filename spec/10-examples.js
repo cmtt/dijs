@@ -182,5 +182,4 @@ describe('Usage examples', function () {
     assert.ok(_server.Flags);
     assert.ok(_server.Ev);
   })
-
 });
