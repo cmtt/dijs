@@ -4,8 +4,8 @@
   "description": "Dependency injection",
   "main": "lib/di.js",
   "scripts": {
-    "test": "grunt mocha",
-    "prepublish" : "grunt minify"
+    "test": "gulp mocha",
+    "prepublish" : "gulp minify"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
   "repository": {
