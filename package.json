@@ -5,7 +5,7 @@
   "main": "lib/di.js",
   "scripts": {
     "test": "gulp mocha",
-    "prepublish" : "gulp minify"
+    "prepublish" : "gulp closure"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
   "repository": {
