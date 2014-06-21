@@ -1,6 +1,6 @@
 {
   "name": "dijs",
-  "version": "0.0.2", 
+  "version": "0.0.3",
   "authors": [
     "Matthias Thoemmes <git@gmx.org>"
   ],
@@ -11,9 +11,11 @@
   "description": "Dependency injection, lazy graph resolution",
   "main": "lib/di.js",
   "keywords": [
-    "Dependency",
+    "dependency",
     "injection",
-    "DI"
+    "DI",
+    "dependency injection",
+    "dependency-injection"
   ],
   "license": "WTFPL",
   "ignore": [

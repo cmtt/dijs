@@ -2,9 +2,8 @@ describe('Dependency injection', function () {
 
   var di = Di();
 
-  it('is an object', function () {
+  it('returns an object', function () {
     assert.ok(_.isObject(di));
-  })
+  });
 
-
-})
+});

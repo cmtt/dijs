@@ -21,7 +21,7 @@ describe('Lazy dependency injections', function () {
 
     assert.ok(mod.ntimes);
     assert.ok(mod.twice);
-  })
+  });
 
   it ('throws an error in case of circular dependencies (lazy)', function () {
     var mod = Di('test', true);
@@ -36,7 +36,7 @@ describe('Lazy dependency injections', function () {
     };
     _testFunction();
     assert.throws(mod.resolve, 'Circular reference detected: test -> test');
-  })
+  });
 
   it ('can initialize in a lazy way with namespaces', function () {
     var mod = Di(null, true);
@@ -57,14 +57,14 @@ describe('Lazy dependency injections', function () {
 
     assert.ok(mod.ntimes);
     assert.ok(mod.math.twice);
-  })
+  });
 
   it ('can inject functions, provides modules after resolve()ing instantly', function () {
     var mod = Di(null, true);
 
-    var fourtimesCalled = 0
-      , ntimesCalled = 0
-      , twiceCalled = 0;
+    var fourtimesCalled = 0;
+    var ntimesCalled = 0;
+    var twiceCalled = 0;
 
     mod.provide('math.fourtimes',['math.twice',function (twice) {
       fourtimesCalled++;
@@ -100,7 +100,7 @@ describe('Lazy dependency injections', function () {
     assert.equal(fourtimesCalled, 1);
     assert.equal(ntimesCalled, 1);
     assert.equal(twiceCalled, 1);
-  })
+  });
 
   it ('can inject functions with dependencies and additional arguments (minification-safe syntax)', function (done) {
     var mod = Di(null, true);
@@ -118,20 +118,20 @@ describe('Lazy dependency injections', function () {
     mod.inject(['sprintf', myFunction], 1,2,3,4);
     mod.provide('sprintf', util.format, true);
     mod.resolve();
-  })
+  });
 
   it('provide()s instantly after resolving', function () {
     var mod = Di(null, true);
     mod.provide('math.twice', function () {
-      return function (i) { return i*2;}
+      return function (i) { return i*2;};
     });
     mod.resolve();
     assert.ok(mod.math);
-    assert.ok(!mod.math.triple)
+    assert.ok(!mod.math.triple);
     mod.provide('math.triple', function () {
-      return function (i) { return i*3;}
+      return function (i) { return i*3;};
     });
-    assert.ok(mod.math.triple)
-  })
+    assert.ok(mod.math.triple);
+  });
 
-})
+});

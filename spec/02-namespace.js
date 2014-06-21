@@ -3,8 +3,8 @@ describe('Namespace', function () {
     var mod = Di();
     _.each(['get','resolve', 'provide','inject','run'], function (key) {
       assert.ok(_.isFunction(mod[key],'Di has function ' + key));
-    })
-  })
+    });
+  });
 
   it('provides numbers, strings and objects as members of a module as hash, get()s them', function () {
     var mod = Di();
@@ -20,7 +20,7 @@ describe('Namespace', function () {
     mod.provide('obj', { one : 1 });
     assert.deepEqual(mod.obj, { one : 1 });
     assert.deepEqual(mod.get('obj'), { one : 1 });
-  })
+  });
 
 
   it ('passes anything else through', function () {
@@ -42,15 +42,15 @@ describe('Namespace', function () {
     assert.equal(mod.bool, true);
 
     mod.provide('date', new Date(), true);
-    assert.ok(_.isDate(mod.date))
+    assert.ok(_.isDate(mod.date));
 
     mod.provide('rgx', /RG(.*)/, true);
-    assert.ok(_.isRegExp(mod.rgx))
+    assert.ok(_.isRegExp(mod.rgx));
 
     mod.provide('undefined', undefined, true);
-    assert.ok(_.isUndefined(mod.undefined))
+    assert.ok(_.isUndefined(mod.undefined));
 
-  })
+  });
 
 
   it ('allows chaining', function () {
@@ -67,7 +67,7 @@ describe('Namespace', function () {
       .get('PI') * 2;
 
     assert.equal(pi2, Math.PI*2);
-  })
+  });
 
 
   it('creates a nested namespace', function () {
@@ -95,6 +95,6 @@ describe('Namespace', function () {
 
 
 
-  })
+  });
 
-})
+});

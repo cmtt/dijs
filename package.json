@@ -1,6 +1,6 @@
 {
   "name": "dijs",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Dependency injection",
   "main": "lib/di.js",
   "scripts": {
@@ -12,13 +12,19 @@
     "type": "git",
     "url": "git://github.com/cmtt/dijs.git"
   },
+  "keywords": [
+    "dependency",
+    "injection",
+    "DI",
+    "dependency injection",
+    "dependency-injection"
+  ],
   "license": "WTFPL",
   "devDependencies": {
     "lodash": "^2.4.1",
-    "grunt-mocha-test": "^0.10.0",
-    "grunt-contrib-watch": "^0.6.1",
-    "grunt-contrib-jshint": "^0.10.0",
-    "grunt-closure-compiler": "0.0.21",
-    "grunt-cli": "^0.1.13"
+    "gulp" : "^3.8.1",
+    "gulp-closure-compiler" : "^0.2.1",
+    "gulp-jshint" : "^1.6.3",
+    "gulp-mocha" : "^0.4.1"
   }
 }

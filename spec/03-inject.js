@@ -14,7 +14,7 @@ describe('Injection', function () {
     assert.ok(_.isObject(mod.util.reader));
     assert.ok(_.isFunction(mod.util.reader.read));
     assert.equal(mod.util.reader.read(0,88),'0-88');
-  })
+  });
 
   it('injects dependencies by minification-safe syntax', function () {
     var mod = Di();
@@ -27,7 +27,7 @@ describe('Injection', function () {
     assert.ok(_.isObject(mod.util.reader));
     assert.ok(_.isFunction(mod.util.reader.read));
     assert.equal(mod.util.reader.read(0,88),'0-88');
-  })
+  });
 
 
   it ('allows to inject a function', function (done) {
@@ -39,9 +39,9 @@ describe('Injection', function () {
     mod.inject(function(twice) {
       assert.equal(this, mod);
       assert.equal(twice(2),4);
-      done()
+      done();
     });
-  })
+  });
 
   it ('allows to inject an array', function (done) {
     var mod = Di();
@@ -57,7 +57,7 @@ describe('Injection', function () {
       assert.equal(twice(2),4);
       assert.equal(ntimes(2,1),2);
       assert.equal(ntimes(2,2),4);
-      done()
+      done();
     }]);
   });
 
@@ -86,7 +86,7 @@ describe('Injection', function () {
       done();
     };
     mod.inject(myFunction, 1,2,3,4);
-  })
+  });
 
   it ('can inject functions with dependencies and additional arguments', function (done) {
     var mod = Di();
@@ -103,7 +103,7 @@ describe('Injection', function () {
       done();
     };
     mod.inject(myFunction, 1,2,3,4);
-  })
+  });
 
 
   it ('can inject functions with dependencies and additional arguments (minification-safe syntax)', function (done) {
@@ -121,7 +121,7 @@ describe('Injection', function () {
       done();
     };
     mod.inject(['sprintf', myFunction], 1,2,3,4);
-  })
+  });
 
 
-})
+});

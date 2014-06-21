@@ -8,7 +8,7 @@ describe('Errors', function () {
       });
     };
     assert.throws(_testFunction, 'Not found: "unknownDependency"');
-  })
+  });
 
   it ('throws an error in case of circular dependencies', function () {
     var mod = Di('test');
@@ -21,7 +21,7 @@ describe('Errors', function () {
       });
     };
     assert.throws(_testFunction, 'Circular: test -> test');
-  })
+  });
 
   it ('does not throw an error with correct syntax', function (done) {
     var mod = Di();
@@ -33,14 +33,14 @@ describe('Errors', function () {
     _testFunction();
     var unknownDependency = mod.get('test');
     assert.equal(unknownDependency,'ok');
-    done()
-  })
+    done();
+  });
 
   it ('does not throw an error when a function is declared in one line', function () {
     var mod = Di();
     mod.provide('fn',function () { return function () {}; });
-    mod.provide('fn2',function (fn) { return fn });
-  })
+    mod.provide('fn2',function (fn) { return fn; });
+  });
 
   it ('throws an error when attempting to inject with unknown dependencies', function () {
     var mod = Di();
@@ -50,11 +50,11 @@ describe('Errors', function () {
       });
     };
     assert.throws(_testFunction, 'Not found: test');
-  })
+  });
 
   it ('does not throw an error when attempting to run with unknown dependencies', function () {
     var mod = Di();
-    mod.provide('sprintf', util.format, true)
+    mod.provide('sprintf', util.format, true);
     var _testFunction1 = function () {
       mod.run(function (unknownDependency) {
         assert.equal(arguments[0],1);
@@ -79,7 +79,7 @@ describe('Errors', function () {
 
     assert.doesNotThrow(_testFunction1);
     assert.doesNotThrow(_testFunction2);
-  })
+  });
 
 
-})
+});

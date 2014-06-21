@@ -10,7 +10,7 @@ describe('Usage examples', function () {
       toString : function () {
         return this.value + ' ' + this.currency;
       }
-    }
+    };
   }
 
   function Shelf (price) {
@@ -33,7 +33,7 @@ describe('Usage examples', function () {
       var l = items.length;
       while (l--) { if (items[l].id === id) return items[l]; }
       return null;
-    }
+    };
 
     items.removeBook = function (id) {
       var book = items.getBook(id);
@@ -61,7 +61,7 @@ describe('Usage examples', function () {
     assert.ok(_.isArray(mod.get('ns.store.shelf')));
     assert.equal(mod.store.shelf.length, 0);
     assert.deepEqual(mod.store.address, address);
-  })
+  });
 
 
   it ('can pass a function through', function () {
@@ -77,7 +77,7 @@ describe('Usage examples', function () {
 
     var pen = price(1,'Euro');
     assert.equal(pen.toString(),'1 Euro');
-  })
+  });
 
   it ('creates a store', function () {
     var mod = Di();
@@ -91,11 +91,12 @@ describe('Usage examples', function () {
     mod.store.shelf.addBook('Modernist cuisine', 55,'Euro');
     assert.equal(mod.store.shelf.length, 3);
     assert.equal(mod.store.shelf.totalSum(), 88);
-  })
+  });
 
   it ('can compose a simple application', function () {
     var bookStore = Di('BookStore');
     var logEntries = [];
+    console.log(); // ensure \n
 
     bookStore.provide('sprintf', util.format, true)
              .provide('log', ['sprintf', function (sprintf) {
@@ -115,10 +116,10 @@ describe('Usage examples', function () {
                     var book = shelf.getBook(id);
                     if (!book) return log('"%s" is not in our line', id);
                     items.push(book);
-                    log('"%s" added to basket, total sum %d', id, this.totalSum())
+                    log('"%s" added to basket, total sum %d', id, this.totalSum());
                   },
                   remove : function (id) {
-                    var book = _.find(items, function (book) { return book.id === id; })
+                    var book = _.find(items, function (book) { return book.id === id; });
                     if (!book) return log('"%s" is not in basket', id);
                     var index = items.indexOf(book);
                     items.splice(index, 1);
@@ -155,7 +156,7 @@ describe('Usage examples', function () {
       '"Modernist cuisine" added to basket, total sum 88'
     ];
     assert.deepEqual(logEntries, fixtures);
-  })
+  });
 
 
   it ('can compose a simple application (lazy)', function () {
@@ -181,5 +182,5 @@ describe('Usage examples', function () {
     assert.ok(_server.http);
     assert.ok(_server.Flags);
     assert.ok(_server.Ev);
-  })
+  });
 });
