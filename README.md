@@ -1,34 +1,125 @@
 dijs
 ----
 
-dijs is a dependency injection module for Node.js and browser environments. It
-was inspired by [AngularJS](http://www.angularjs.org/), includes rudimentary
-namespace support and lazy dependency resolution.
+dijs is a dependency injection framework for Node.js and browser environments.
+It was inspired by [AngularJS](http://www.angularjs.org/) and allows to choose
+between synchronous and asynchronous resolution patterns in an non-opinionated way.
 
-Dependency injection might be a useful pattern to organize and struture larger
-projects better.
-As dependency injection is usually only performed to compose an application,
-it shouldn't lead to severe performance drawbacks.
+# Migrating from previous versions
 
-# Usage
+By default, dijs is now asynchronous. If you want to use the current release
+with your existing (synchronous) code, update your require statement as following:
 
-In addition, please have a look at spec/10-examples.js.
+````js
+var Di = require('dijs/legacy');
+````
+
+In addition, dijs' target specification is currently ECMAScipt 5.1.
+You will need to add polyfills for the methods in certain browser environments:
+
+- Array.prototype.map
+
+# Namespacing
+
+Each dijs instance has a new namespace instance at its core. It consists of an
+object with getter/setter methods for sub-paths:
+
+````js
+  var Namespace = require('dijs/lib/namespace');
+  var namespace = new Namespace('home');
+  namespace.floor = { chair : true };
+  assert.deepEqual(namespace.$get('home.floor'), { chair : true})
+  namespace.$set('home.floor.chairColor', 'blue');
+  assert.deepEqual(namespace.floor, { chair: true, chairColor: 'blue' });
+
+````
+
+# Asynchronous usage
+
+By default, dijs is asynchronous and expects callback functions. You can supply
+arbitrary values, too (see below).    
+
+Note that you'll need to add callback parameters to both $provide and $resolve
+calls.
+
+`````js
+  var Di = require('dijs');
+
+  var namespace = new Di('home');
+
+  namespace.$provide('floor',function (callback) { 
+    callback(null, { chair : true });
+  });
+
+  namespace.$provide('floorColor','blue');
+
+  namespace.$provide('home.floor.color',function (floor, floorColor, callback) {
+    callback(null, floor.chair ? floorColor : 'red');
+  });
+
+  namespace.$resolve(function (err) {
+    assert.ok(!err);
+    assert.deepEqual(namespace.floor, { chair: true, color: 'blue' });
+    assert.deepEqual(namespace.floorColor, 'blue');
+    // Everything required has been resolved.
+  });
+
+````
+# Asynchronous usage with promises
+
+If you prefer the trending promise syntax, you can use the following syntax.
+As Promises are currently part of the upcoming ECMAScript standards, they are
+not available in all environments.
+
+Therefore, you'll need to supply an adapter which returns new promises.
+
+You can supply your own Promise adapter:
+
+`````js
+  var Di = require('dijs/promise');
+  var q = require('q');
+  var Di = require('../promise');
+
+  /**
+   * An adapter must provide a defer() function which returns a new promise.
+   */
+
+  var qAdapter = function () { return q; };
+
+  var namespace = new Di('home', { adapter : qAdapter });  
+
+  namespace.$provide('floor',function () {
+    var defer = q.defer();
+    defer.resolve({ chair : true });
+    return defer.promise;
+  });
+
+  namespace.$provide('floorColor','blue');
+
+  namespace.$provide('home.floor.color',function (floor, floorColor) {
+    var defer = q.defer();
+    defer.resolve(floor.chair ? floorColor : 'red');
+    return defer.promise;
+  });
+
+  namespace.$resolve().then(function () {
+    assert.deepEqual(namespace.floor, { chair: true, color: 'blue' });
+    assert.deepEqual(namespace.floorColor, 'blue');
+    // Everything required has been resolved.
+  }, function (err) {
+    throw err;
+  });
+
+````
+
+# Synchronous usage
+
+If you should use dijs synchronously, you'll be able to inject arbitrary methods
+and functions into the new namespace. Please note the require('dijs/legacy') call.
 
 ````js
 
-  var mod = Di();
-
-  mod.provide('price', Price, true);
-  mod.provide('store.shelf', Shelf);
-  mod.provide('store.address', { street : 'Plan 7' }, true);
-
-  mod.store.shelf.addBook('1984', 3,'Euro');
-  mod.store.shelf.addBook('Lord of the rings', 30,'Euro');
-  mod.store.shelf.addBook('Modernist cuisine', 55,'Euro');
-  assert.equal(mod.store.shelf.length, 3);
-
-  // Total value 88
-  console.log('Total value', mod.store.shelf.totalSum());
+  var Di = require('dijs/legacy');
 
   function Price (value, currency) {
     return {
@@ -48,7 +139,9 @@ In addition, please have a look at spec/10-examples.js.
 
     items.totalSum = function () {
       var sum = 0;
-      for (var item, i = 0, l = items.length; i < l; ++i) sum += items[i].price;
+      for (var item, i = 0, l = items.length; i < l; ++i) {
+        sum += items[i].price;
+      }
       return sum;
     };
 
@@ -62,6 +155,55 @@ In addition, please have a look at spec/10-examples.js.
     return items;
   }
 
+  var mod = Di();
+  mod.provide('price', Price, true);
+  mod.provide('store.shelf', Shelf);
+  mod.provide('store.address', { street : 'Plan 7' }, true);
+  mod.store.shelf.addBook('1984', 3,'Euro');
+  mod.store.shelf.addBook('Lord of the rings', 30,'Euro');
+  mod.store.shelf.addBook('Modernist cuisine', 55,'Euro');
+  assert.equal(mod.store.shelf.length, 3);
+
+  // Total value 88
+  console.log('Total value', mod.store.shelf.totalSum());
+
+````
+
+# Providing literals, raw functions and arrays
+
+dijs injects all values passed to $provide() into the namespace. An important
+exception are functions and arrays, they dijs parses them by default (see below).
+
+By adding true as third parameter to $provide, you can pass arbitrary functions
+and arrays dependency injection:
+
+````js
+  var Di = require('dijs');
+  var namespace = Di();
+  namespace.$provide('boolean', true);
+  namespace.$provide('string', 'string');
+  namespace.$provide('null', null);
+  namespace.$provide('int', 1);
+  namespace.$provide('float', 3.1459);
+  namespace.$provide('object', { key : 'value'});
+
+  // Functions and Arrays are being used for dependency injection,
+  // therefore add true in order to pass the values through.
+
+  namespace.$provide('log', console.log, true);
+  namespace.$provide('array', [1,2,3], true);
+
+  namespace.$resolve(function () {
+    assert.equal(namespace.boolean, true);
+    assert.equal(namespace.string, 'string');
+    assert.equal(namespace.null, null);
+    assert.equal(namespace.int, 1);
+    assert.equal(namespace.float, 3.1459);
+    assert.deepEqual(namespace.object, { key : 'value'});
+    assert.deepEqual(namespace.log, console.log);
+    assert.deepEqual(namespace.array, [1,2,3]);
+    done();
+  });
 ````
 
 # Reference
@@ -81,9 +223,9 @@ other modules on which it should depend.
 Note: You cannot inject dot-delimited dependencies with this notation.
 
 ````js
-var mod = Di();
-mod.provide('Pi',Math.PI, true);
-mod.provide('2Pi', function (Pi) { return 2*Pi; });
+  var mod = Di();
+  mod.provide('Pi',Math.PI, true);
+  mod.provide('2Pi', function (Pi, callback) { callback(null, return 2*Pi); });
 ````
 
 ### array notation (minification-safe)
@@ -94,67 +236,64 @@ strings in the first part of the array, the last argument must be the actual
 module function.
 
 ````js
-var mod = Di();
-mod.provide('Math.Pi',Math.PI, true);
-mod.provide('2Pi', ['Math.Pi', function (Pi) {
-  return function () {
-    return 2*Pi;
-  };
-}]);
+  var mod = Di();
+  mod.provide('Math.Pi',Math.PI, true);
+  mod.provide('2Pi', ['Math.Pi', function (Pi, callback) {
+    callback(null, 2*Pi);
+  }]);
 ````
 
-## Di (moduleId, lazy)
+# Reference for the legacy API
 
-Creates a new namespace. The module id serves as optional prefix for
-sub-modules.
+## Di (moduleId, options)
 
-In lazy mode, resolve() must be called manually to resolve the dependency graph.
-This might be useful for application initialization, as the order of provided
-modules is irrelevant in this case.
+Creates a new namespace. The module id is an optional prefix for sub-paths.
 
-## Di.provide(id, object, passthrough)
+### Options
+
+#### lazy {boolean}
+
+By default, dijs expects a call to $resolve() in order to resolve the dependency
+graph.
+
+This is the preferred behavior in all asynchronous modes.
+
+## Di.$provide(id, object, passthrough)
 
 Provides a module in the namespace under the supplied id. If passthrough is
-true, the object will be provided without dependency lookup. Even though
-everything besides arrays and functions will be passed through, you should
-always set passthrough to prevent errors (f.e. with array-like objects like
-jQuery elements).
+true, the object will be just passed through, no dependencies are looked up this
+way.
 
 Sub-modules can be provided with the dot delimiter:
 
 ````js
-var mod = Di();
-mod.provide('module.submodule.value', 1, true);
-
-// { submodule : { value : 1 } }
-console.log(mod.get('module'));
+  var mod = Di();
+  mod.$provide('module.submodule.value', 1, true);
+  mod.$resolve(function (err) {
+    if (err) throw err;
+    assert.deepEqual(mod.$get('module'), { submodule : { value : 1 });
+  });
 ````
 
-## Di.inject(fn, args...)
+If you don't pass a value through, you can choose between the function and the
+array notation to describe the module's dependencies (see above).
 
-Resolves all given dependencies of the supplied function (or array) and calls
-the function with the supplied arguments and returns the namespace. No
-modification of the namespace takes place.
+## Di.$get(id)
 
-## Di.run(fn, args...)
+Returns the (previously provided) sub-module specified by a dot-delimited id. 
 
-Instead of providing, this function resolves the specified dependencies, calls
-fn with the specified arguments and returns its return value afterwards (if not
-in lazy mode / after resolve()).
-No modification of the namespace takes place.
+## Di.$set(id, value)
 
-## Di.get(id)
+Sets a value in the namespace, specified by a dot-delimited path.
 
-Returns a module specified by id. You can use a dot-delimited string here.
-
-## Di.resolve()
+## Di.$resolve(callback)
 
 Resolves the dependency graph. This function gets called internally when lazy
-dependency resolution is turned off. In lazy mode, it must be called as soon as
-the effects of the previous calls to provide(), inject() and run() should take
-place.
+dependency resolution is turned off, but it must be called if the namespace is
+initialized in lazy mode.
 
-In this mode, all subsequent calls these functions will be resolved immediately.
+All subsequent calls to provide/inject and run will resolve the dependency
+graph immediately.
 
 ````js
 var mod = Di('namespace', true);
@@ -168,71 +307,57 @@ mod.provide('Log',console.log.bind(console), true);
 mod.resolve();
 ````
 
+# Creating your own method module
+
+If you want to create your own synchronous or asynchronous resolution patterns,
+you can write a **method** module.
+
+See the methods folder for examples.
+
 # Testing
 
-To install all Node.js dependencies and run the unit tests, execute the following
-commands:
+You can run one of the following commands in order to run the unit tests:
 ````
-$ npm install
-$ gulp mocha
+$ mocha      # in case you have mocha installed globally
+$ gulp mocha # in case you have gulp installed globally
 ````
 
 # Build
-A minified version (1967 bytes, 972 bytes gzipped) is included in the build/ directory.
+A minified version (2701 bytes, 1293 bytes gzipped) is included in the dist/ directory.
 
-In addition, you can create a minified build with Google's Closure compiler by
-yourself.
+In addition, you can create a minified build with Google's Closure compiler
+by yourself. Be sure to set the CLOSURE_PATH environment variable, then you can
+run the "minify" gulp task.
 
-Please refer to steida's [gulp-closure-compiler](https://github.com/steida/gulp-closure-compiler)
-for further information about the installation of this requirement.
-
-After installation, execute:
+In order to build dijs and run all unit testa, just execute
 
 ````
-$ export CLOSURE_PATH=/path/to/your/compiler.jar
-$ grunt minify
+$ gulp
 ````
 
-(Note: You will need to replace "/path/to/your" with your compiler.jar's path.)
+(Be sure to have [Gulp](http://gulpjs.com) installed.)
 
 # Changelog
 
-0.0.3 - 06/21/2014
+0.1.0 - 06/26/2015
 
- - hinting specs and helper files
- - adopting [Universal Module Definition](https://github.com/umdjs/umd)
- - dropping Grunt in favor of Gulp
- - typos
+  - split dijs into different modules
+  - dijs is now asynchronous with callbacks by default
+  - new Promise method, using arbitrary implementations
+  - updated documentation, additional unit tests
 
 0.0.2 - 05/01/2014
 
-- updated documentation
-- more strict syntax
-- fixing an error when a function is provided in one line
-- tests updated
-- updated usage examples
+ - updated documentation
+ - more strict syntax
+ - fixing an error when a function is provided in one line
+ - tests updated
+ - updated usage examples
 
 0.0.1 - 04/04/2014
 
 Initial release.
 
-# Contributors
-
-- [7footmoustache](https://github.com/7footmoustache) corrected a spelling mistake
-
 # License
-````
-          DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-                      Version 2, December 2004
 
-   Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
-
-   Everyone is permitted to copy and distribute verbatim or modified
-   copies of this license document, and changing it is allowed as long
-   as the name is changed.
-
-              DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-     TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-
-    0. You just DO WHAT THE FUCK YOU WANT TO.
-````
+MIT

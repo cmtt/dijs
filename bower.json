@@ -1,6 +1,6 @@
 {
   "name": "dijs",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "authors": [
     "Matthias Thoemmes <git@gmx.org>"
   ],
@@ -8,21 +8,20 @@
     "type": "git",
     "url": "git://github.com/cmtt/dijs.git"
   },
-  "description": "Dependency injection, lazy graph resolution",
+  "description": "Asynchronous dependency injection framework for Node.js and browser environments",
   "main": "lib/di.js",
   "keywords": [
+    "browser",
     "dependency",
     "injection",
     "DI",
     "dependency injection",
     "dependency-injection"
   ],
-  "license": "WTFPL",
+  "license": "MIT",
   "ignore": [
-    "**/.*",
     "node_modules",
     "bower_components",
-    "test",
-    "tests"
+    "test"
   ]
 }

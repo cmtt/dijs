@@ -1,18 +1,19 @@
-describe('Injection', function () {
+var Di = require('../legacy');
 
+describe('Injection', function () {
 
   it('injects dependencies by function call', function () {
     var mod = Di();
     mod.provide('sprintf', util.format, true);
-    assert.ok(_.isFunction(mod.sprintf));
+    assert.ok((typeof mod.sprintf === 'function'));
 
     mod.provide('util.reader', function (sprintf) {
       return {
         read : function (start, end) { return sprintf('%d-%d', start, end); }
       };
     });
-    assert.ok(_.isObject(mod.util.reader));
-    assert.ok(_.isFunction(mod.util.reader.read));
+    assert.ok((typeof mod.util.reader === 'object'));
+    assert.ok((typeof mod.util.reader.read === 'function'));
     assert.equal(mod.util.reader.read(0,88),'0-88');
   });
 
@@ -24,11 +25,10 @@ describe('Injection', function () {
         read : function (start, end) { return sprintf('%d-%d', start, end); }
       };
     }]);
-    assert.ok(_.isObject(mod.util.reader));
-    assert.ok(_.isFunction(mod.util.reader.read));
+    assert.ok((typeof mod.util.reader === 'object'));
+    assert.ok((typeof mod.util.reader.read === 'function'));
     assert.equal(mod.util.reader.read(0,88),'0-88');
   });
-
 
   it ('allows to inject a function', function (done) {
     var mod = Di();
@@ -61,7 +61,6 @@ describe('Injection', function () {
     }]);
   });
 
-
   it ('allows to inject dependencies with different variable names', function (done) {
     var mod = Di();
 
@@ -76,7 +75,6 @@ describe('Injection', function () {
     assert.ok(mod.util.sprintf);
     mod.inject(fn);
   });
-
 
   it ('can inject functions with arguments', function (done) {
     var mod = Di();
@@ -93,11 +91,8 @@ describe('Injection', function () {
     mod.provide('sprintf', util.format, true);
 
     var myFunction = function (sprintf) {
-      var args = _.chain(arguments)
-                  .toArray()
-                  .slice(1)
-                  .unshift('%d to %d to %d to %d')
-                  .value();
+      var args = [].slice.apply(arguments).slice(1);
+      args.unshift('%d to %d to %d to %d');
 
       assert.equal(sprintf.apply(sprintf, args), '1 to 2 to 3 to 4');
       done();
@@ -105,23 +100,18 @@ describe('Injection', function () {
     mod.inject(myFunction, 1,2,3,4);
   });
 
-
   it ('can inject functions with dependencies and additional arguments (minification-safe syntax)', function (done) {
     var mod = Di();
     mod.provide('sprintf', util.format, true);
 
     var myFunction = function (sprintf) {
-      var args = _.chain(arguments)
-                  .toArray()
-                  .slice(1)
-                  .unshift('%d to %d to %d to %d')
-                  .value();
+      var args = [].slice.apply(arguments).slice(1);
+      args.unshift('%d to %d to %d to %d');
 
       assert.equal(sprintf.apply(sprintf, args), '1 to 2 to 3 to 4');
       done();
     };
     mod.inject(['sprintf', myFunction], 1,2,3,4);
   });
-
 
 });

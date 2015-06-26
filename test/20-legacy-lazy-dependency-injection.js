@@ -1,4 +1,6 @@
-describe('Lazy dependency injections', function () {
+var Di = require('../legacy');
+
+describe('Lazy dependency injections (legacy)', function () {
 
   it ('can initialize in a lazy way', function () {
     var mod = Di(null, true);
@@ -17,7 +19,7 @@ describe('Lazy dependency injections', function () {
 
     assert.ok(!mod.ntimes);
     assert.ok(!mod.twice);
-    mod.resolve();
+    mod.$resolve();
 
     assert.ok(mod.ntimes);
     assert.ok(mod.twice);
@@ -35,7 +37,7 @@ describe('Lazy dependency injections', function () {
 
     };
     _testFunction();
-    assert.throws(mod.resolve, 'Circular reference detected: test -> test');
+    assert.throws(mod.$resolve, 'Circular reference detected: test -> test');
   });
 
   it ('can initialize in a lazy way with namespaces', function () {
@@ -53,7 +55,7 @@ describe('Lazy dependency injections', function () {
       return function (i) { return i*2; };
     });
 
-    mod.resolve();
+    mod.$resolve();
 
     assert.ok(mod.ntimes);
     assert.ok(mod.math.twice);
@@ -81,7 +83,7 @@ describe('Lazy dependency injections', function () {
       return function (i) { return i*2; };
     });
 
-    mod.resolve();
+    mod.$resolve();
 
     assert.ok(mod.ntimes);
     assert.ok(mod.math.twice);
@@ -93,9 +95,15 @@ describe('Lazy dependency injections', function () {
     mod.provide('test', function () {
       return true;
     });
-    // mod.resolve();
+
+    // this is now not needed anymore, as Dijs revolves now all dependencies
+    // instantly:
+
+    // mod.$resolve();
 
     assert.equal(mod.test, true);
+
+    // Check if the functions have been called solely once
 
     assert.equal(fourtimesCalled, 1);
     assert.equal(ntimesCalled, 1);
@@ -106,18 +114,14 @@ describe('Lazy dependency injections', function () {
     var mod = Di(null, true);
 
     var myFunction = function (sprintf) {
-      var args = _.chain(arguments)
-                  .toArray()
-                  .slice(1)
-                  .unshift('%d to %d to %d to %d')
-                  .value();
-
+      var args = [].slice.apply(arguments).slice(1);
+                  args.unshift('%d to %d to %d to %d');
       assert.equal(sprintf.apply(sprintf, args), '1 to 2 to 3 to 4');
       done();
     };
-    mod.inject(['sprintf', myFunction], 1,2,3,4);
     mod.provide('sprintf', util.format, true);
-    mod.resolve();
+    mod.$resolve();
+    mod.inject(['sprintf', myFunction], 1,2,3,4);
   });
 
   it('provide()s instantly after resolving', function () {
@@ -125,7 +129,7 @@ describe('Lazy dependency injections', function () {
     mod.provide('math.twice', function () {
       return function (i) { return i*2;};
     });
-    mod.resolve();
+    mod.$resolve();
     assert.ok(mod.math);
     assert.ok(!mod.math.triple);
     mod.provide('math.triple', function () {

@@ -1,11 +1,10 @@
 {
   "name": "dijs",
-  "version": "0.0.3",
-  "description": "Dependency injection",
+  "version": "0.1.0",
+  "description": "Asynchronous dependency injection framework for Node.js and browser environments",
   "main": "lib/di.js",
   "scripts": {
-    "test": "gulp mocha",
-    "prepublish" : "gulp closure"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
   "repository": {
@@ -13,18 +12,24 @@
     "url": "git://github.com/cmtt/dijs.git"
   },
   "keywords": [
+    "browser",
     "dependency",
     "injection",
     "DI",
     "dependency injection",
     "dependency-injection"
   ],
-  "license": "WTFPL",
+  "license": "MIT",
+  "dependencies": {
+    "gulp": "^3.9.0",
+    "gulp-closure-compiler": "^0.2.19",
+    "gulp-jshint": "^1.11.0",
+    "gulp-mocha": "^2.1.1",
+    "gulp-webpack": "^1.5.0",
+    "mocha": "^2.2.5"
+  },
   "devDependencies": {
-    "lodash": "^2.4.1",
-    "gulp" : "^3.8.1",
-    "gulp-closure-compiler" : "^0.2.1",
-    "gulp-jshint" : "^1.6.3",
-    "gulp-mocha" : "^0.4.1"
+    "bluebird": "^2.9.30",
+    "q": "^1.4.1"
   }
 }

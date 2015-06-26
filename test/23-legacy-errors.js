@@ -1,3 +1,5 @@
+var Di = require('../legacy');
+
 describe('Errors', function () {
 
   it ('throws an error when a dependency cannot be resolved', function () {
@@ -20,7 +22,7 @@ describe('Errors', function () {
         return true;
       });
     };
-    assert.throws(_testFunction, 'Circular: test -> test');
+    assert.throws(_testFunction, new RegExp('Circular\: test \-\> test'));
   });
 
   it ('does not throw an error with correct syntax', function (done) {
