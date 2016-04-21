@@ -41,9 +41,9 @@ module.exports = function LegacyMethod (namespace, options) {
     });
 
     // Iterate over dependencies
-    
+
     items.forEach(function (item) {
-      this.$set(item.key, item.payload.apply(item, item.params.map(this.$get)));
+      this.$set(item.key, item.payload.apply(namespace, item.params.map(this.$get)));
     }, this);
 
     resolved = resolved.concat(order);
@@ -72,7 +72,7 @@ module.exports = function LegacyMethod (namespace, options) {
 
   namespace.run = function (params) {
     var args = [].slice.apply(arguments).slice(1);
-    var info = this.$parseArgs(params);  
+    var info = this.$parseArgs(params);
 
     /**
      * @method $injectFn
@@ -81,7 +81,7 @@ module.exports = function LegacyMethod (namespace, options) {
 
     function $injectFn() {
       var values = [];
-      info.params.forEach(function (key, index) {        
+      info.params.forEach(function (key, index) {
         var value = namespace.$get(key);
         if(value) values.push(value);
       });
@@ -96,8 +96,8 @@ module.exports = function LegacyMethod (namespace, options) {
         fn : injectFn
       });
       return;
-    } 
-    return injectFn();    
+    }
+    return injectFn();
   };
 
   /**
@@ -109,7 +109,7 @@ function.
 
   namespace.inject = function (params) {
     var args = [].slice.apply(arguments).slice(1);
-    var info = this.$parseArgs(params);  
+    var info = this.$parseArgs(params);
 
     var injectFn = function () {
       var values = [];
@@ -118,7 +118,7 @@ function.
         if (typeof value === 'undefined') throw new Error('Not found: ' + key);
         values.push(value);
       });
-      values = values.concat(args);    
+      values = values.concat(args);
       return info.fn.apply(namespace, values);
     };
 
@@ -128,7 +128,7 @@ function.
         fn : injectFn
       });
       return;
-    } 
+    }
     return injectFn();
   };
 
@@ -148,9 +148,9 @@ function.
    */
 
   namespace.provide = function () {
-    var retval = $provide.apply(this, arguments);
+    var retval = $provide.apply(namespace, arguments);
     if (options.lazy === false) this.$resolve();
-    return retval;  
+    return retval;
   };
 
   return $injector;

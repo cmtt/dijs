@@ -106,24 +106,24 @@ describe('Di',function () {
     d.$resolve(function (err) {
       assert.ok(!err);
       assert.deepEqual(log,['s6', 's3', 's5', 's4', 's2', 's1']);
-      assert.deepEqual(d.s6, [ 's6' ]);      
-      assert.deepEqual(d.s3, [ 's6', 's3' ]);      
-      assert.deepEqual(d.s5, [ 's6', 's3', 's5' ]);      
-      assert.deepEqual(d.s4, [ 's6', 's3', 's5', 's4' ]);      
-      assert.deepEqual(d.s2, [ 's6', 's3', 's5', 's4', 's2' ]);      
-      assert.deepEqual(d.s1, [ 's6', 's3', 's5', 's4', 's2', 's1' ]);      
+      assert.deepEqual(d.s6, [ 's6' ]);
+      assert.deepEqual(d.s3, [ 's6', 's3' ]);
+      assert.deepEqual(d.s5, [ 's6', 's3', 's5' ]);
+      assert.deepEqual(d.s4, [ 's6', 's3', 's5', 's4' ]);
+      assert.deepEqual(d.s2, [ 's6', 's3', 's5', 's4', 's2' ]);
+      assert.deepEqual(d.s1, [ 's6', 's3', 's5', 's4', 's2', 's1' ]);
       assert.deepEqual(d.$get('base.s6'), [ 's6' ]);
       assert.deepEqual(d.$get('base.s3'), [ 's6', 's3' ]);
       assert.deepEqual(d.$get('base.s5'), [ 's6', 's3', 's5' ]);
       assert.deepEqual(d.$get('base.s4'), [ 's6', 's3', 's5', 's4' ]);
       assert.deepEqual(d.$get('base.s2'), [ 's6', 's3', 's5', 's4', 's2' ]);
-      assert.deepEqual(d.$get('base.s1'), [ 's6', 's3', 's5', 's4', 's2', 's1' ]);      
+      assert.deepEqual(d.$get('base.s1'), [ 's6', 's3', 's5', 's4', 's2', 's1' ]);
       assert.deepEqual(d.$get('s6'), [ 's6' ]);
       assert.deepEqual(d.$get('s3'), [ 's6', 's3' ]);
       assert.deepEqual(d.$get('s5'), [ 's6', 's3', 's5' ]);
       assert.deepEqual(d.$get('s4'), [ 's6', 's3', 's5', 's4' ]);
       assert.deepEqual(d.$get('s2'), [ 's6', 's3', 's5', 's4', 's2' ]);
-      assert.deepEqual(d.$get('s1'), [ 's6', 's3', 's5', 's4', 's2', 's1' ]);      
+      assert.deepEqual(d.$get('s1'), [ 's6', 's3', 's5', 's4', 's2', 's1' ]);
       done();
     });
   });
@@ -152,7 +152,7 @@ describe('Di',function () {
     var s = 10;
     var expected = s;
 
-    d.$provide('wait', [function (callback) {      
+    d.$provide('wait', [function (callback) {
       callback(null, function (next) {
         var now = +new Date();
         setTimeout(function () {
@@ -160,13 +160,22 @@ describe('Di',function () {
         }, s);
       });
     }]);
-    
+
     d.$resolve(function (err) {
       if(err) return done(err);
       d.wait(function (err, value) {
         assert.ok(Math.abs(expected - value) < threshold, 'Difference : ' + expected + ' vs. ' + value);
         done();
       });
+    });
+  });
+
+  it('`this` equals namespace', function (done) {
+    var d = new Di(null);
+    d.$provide('test', function (callback) { callback(null, this); });
+    d.$resolve(function (err) {
+      assert.deepEqual(d.test, d);
+      done();
     });
   });
 

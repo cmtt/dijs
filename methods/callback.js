@@ -30,7 +30,7 @@ module.exports = function CallbackMethod (namespace, options) {
 
   /**
    * @method $injector
-   * @description An injector function for a queue of callback functions. 
+   * @description An injector function for a queue of callback functions.
    * @param {object[]} queue
    */
 
@@ -61,9 +61,9 @@ module.exports = function CallbackMethod (namespace, options) {
       if (err) return callback(err);
       var item = items.shift();
       if (!item) return callback(null);
-      
+
       var values = item.params.map(namespace.$get);
-      
+
       /**
        * @method $injectorCallback
        * @param {object} err
@@ -79,7 +79,7 @@ module.exports = function CallbackMethod (namespace, options) {
       values.push($injectorCallback);
 
       nextTick(function () {
-        item.payload.apply(item, values);
+        item.payload.apply(namespace, values);
       });
     };
 

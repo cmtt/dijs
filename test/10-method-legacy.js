@@ -24,6 +24,13 @@ describe('Legacy method', function () {
 
     d.$resolve();
     assert.deepEqual(log,['s6', 's3', 's5', 's4', 's2', 's1']);
-  });  
+  });
+
+  it('`this` equals namespace', function () {
+    var d = new Di(null, true);
+    d.provide('test', function () { return this; });
+    var ref = d.$resolve();
+    assert.deepEqual(d.$resolve(), d);
+  });
 
 });

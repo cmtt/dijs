@@ -37,7 +37,7 @@ object with getter/setter methods for sub-paths:
 # Asynchronous usage
 
 By default, dijs is asynchronous and expects callback functions. You can supply
-arbitrary values, too (see below).    
+arbitrary values, too (see below).
 
 Note that you'll need to add callback parameters to both $provide and $resolve
 calls.
@@ -47,7 +47,7 @@ calls.
 
   var namespace = new Di('home');
 
-  namespace.$provide('floor',function (callback) { 
+  namespace.$provide('floor',function (callback) {
     callback(null, { chair : true });
   });
 
@@ -86,7 +86,7 @@ You can supply your own Promise adapter:
 
   var qAdapter = function () { return q; };
 
-  var namespace = new Di('home', { adapter : qAdapter });  
+  var namespace = new Di('home', { adapter : qAdapter });
 
   namespace.$provide('floor',function () {
     var defer = q.defer();
@@ -280,7 +280,7 @@ array notation to describe the module's dependencies (see above).
 
 ## Di.$get(id)
 
-Returns the (previously provided) sub-module specified by a dot-delimited id. 
+Returns the (previously provided) sub-module specified by a dot-delimited id.
 
 ## Di.$set(id, value)
 
@@ -338,6 +338,12 @@ $ gulp
 (Be sure to have [Gulp](http://gulpjs.com) installed.)
 
 # Changelog
+
+0.1.1 - 04/21/2016
+
+  - harmonizing behaviour of "this" across all adapters in order to access the
+    namespace from each DI definition
+  - Updating all dependencies
 
 0.1.0 - 06/26/2015
 

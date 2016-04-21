@@ -72,9 +72,9 @@
 	  var queue = [];
 	  var namespace = new Namespace(name);
 	  var $injector = null;
-	  
+
 	  namespace.$parseArgs = parseArgs;
-	  namespace.$provide = $provide;  
+	  namespace.$provide = $provide;
 	  namespace.$resolve = function () {
 	    return $injector.apply(this, [queue].concat([].slice.apply(arguments)));
 	  };
@@ -132,7 +132,7 @@
 	      params = info.params;
 	    } else if (typeof fn === 'function') {
 	      info = parseFn(fn);
-	      params = info.slice();      
+	      params = info.slice();
 	    } else {
 	      fn = $injector.defaultFunction(arguments[0]);
 	    }
@@ -208,7 +208,7 @@
 
 	  /**
 	   * @method $injector
-	   * @description An injector function for a queue of callback functions. 
+	   * @description An injector function for a queue of callback functions.
 	   * @param {object[]} queue
 	   */
 
@@ -239,9 +239,9 @@
 	      if (err) return callback(err);
 	      var item = items.shift();
 	      if (!item) return callback(null);
-	      
+
 	      var values = item.params.map(namespace.$get);
-	      
+
 	      /**
 	       * @method $injectorCallback
 	       * @param {object} err
@@ -257,7 +257,7 @@
 	      values.push($injectorCallback);
 
 	      nextTick(function () {
-	        item.payload.apply(item, values);
+	        item.payload.apply(namespace, values);
 	      });
 	    };
 

@@ -84,6 +84,20 @@ describe('Promises', function () {
         o.resolve('value');
       });
 
+      it('`this` equals namespace', function (done) {
+        var options = Object.create(defaultOptions);
+        options.lazy = true;
+
+        var d = Di('name', options);
+        var o = Promise.defer();
+        d.$provide('test',function () { return this; });
+        d.$resolve().then(function () {
+          assert.deepEqual(d.$get('test'), d);
+          done();
+        });
+      });
+
+
     });
 
   }
