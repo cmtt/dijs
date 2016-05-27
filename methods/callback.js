@@ -1,102 +1,96 @@
-var Resolver = require('../lib/resolver');
+'use strict';
+
+const Resolver = require('../lib/resolver');
+const RGX_CALLBACK = /^(callback|cb|next)/;
+const nextTick = typeof process !== 'undefined' ? process.nextTick : (typeof setImmediate !== 'undefined' ? setImmediate : setTimeout);
 
 /**
- * @method nextTick
- * @see https://github.com/medikoo/next-tick
+ * @class CallbackMethod
+ * @exports
  */
 
-var nextTick = (function nextTick () {
-  // taken from Node.js
-  if ((typeof process !== 'undefined') && process &&
-      (typeof process.nextTick === 'function')) { return process.nextTick; }
-
-  // W3C Draft
-  // http://dvcs.w3.org/hg/webperf/raw-file/tip/specs/setImmediate/Overview.html
-  if (typeof setImmediate === 'function') return function (cb) { setImmediate(cb); };
-  // Wide available standard
-  if (typeof setTimeout === 'function') { return function (cb) { setTimeout(cb, 0); }; }
-  return null;
-}());
-
-/**
- * @method CallbackMethod
- * @public
- * @param {object} namespace
- * @param {object} options
- * @returns {function}
- */
-
-module.exports = function CallbackMethod (namespace, options) {
+class CallbackMethod {
 
   /**
-   * @method $injector
-   * @description An injector function for a queue of callback functions.
+   * @param {object} options
+   * @return {function} $resolve
+   */
+
+  constructor (options) {
+    return this.$resolve;
+  }
+
+  /**
+   * @static defaultFunction
+   * @param {*} value
+   * @return {function}
+   */
+
+  static defaultFunction (value) {
+    return (callback) => callback(null, value);
+  }
+
+  /**
+   * @method $resolve
    * @param {object[]} queue
    */
 
-  function $injector (queue, callback) {
-    var namespace = this;
-    var resolver = new Resolver();
-    var index = 0;
-    if (typeof callback !== 'function') throw new Error('E_NO_CALLBACK');
+  $resolve (queue, $inject, callback) {
+    let namespace = this;
 
-    while (queue.length) {
-      var item = queue.shift();
-      if (item.params[item.params.length-1] === 'callback') item.params.pop();
-      resolver.provide(item.key, item.params, item.fn);
-      ++index;
+    if (typeof callback !== 'function') {
+      throw new Error('No callback');
     }
 
-    var order = resolver.resolve();
-    var items = order.map(function (key) { return resolver.byId(key);  });
+    let item = null;
+    for (var i = 0, l = queue.length; i < l; i++) {
+      item = queue[i];
+      if (RGX_CALLBACK.test(item.params[item.params.length - 1])) {
+        item.params.pop();
+      }
+    }
+    let items = Resolver.resolveQueue(queue);
+    next();
 
     /**
      * @method next
-     * @description Handles the next queue item or calls back.
-     * @param {object} err
      * @private
+     * @param {Error|null} err
      */
 
-    var next = function (err) {
-      if (err) return callback(err);
-      var item = items.shift();
-      if (!item) return callback(null);
+    function next (err) {
+      if (err) {
+        return callback(err);
+      } else if (!items.length) {
+        return callback(null);
+      }
 
-      var values = item.params.map(namespace.$get);
+      let item = items.shift();
+
+      if (typeof item.payload !== 'function') {
+        return $injectorCallback(null, item.payload);
+      }
+
+      let args = $inject(item.params);
+      args.push($injectorCallback);
+      item.payload.apply(namespace, args);
 
       /**
        * @method $injectorCallback
        * @param {object} err
        * @param {*} val
-       * @exports
+       * @private
        */
 
       function $injectorCallback (err, val) {
-        if (err) return next(err);
-        namespace.$set(item.key, val);
-        nextTick(function () { next(null); });
+        if (err) {
+          return next(err);
+        }
+        namespace.set(item.key, val);
+        nextTick(next);
       }
-      values.push($injectorCallback);
-
-      nextTick(function () {
-        item.payload.apply(namespace, values);
-      });
-    };
-
-    next(null);
-    return namespace;
+    }
   }
+}
 
-  /**
-   * @method defaultFunction
-   * @description Getter for passthrough/non-function arguments.
-   * @param {*} value
-   * @returns {function}
-   */
-
-  $injector.defaultFunction = function (value) {
-    return function (callback) { callback(null, value); };
-  };
-
-  return $injector;
-};
+module.exports = CallbackMethod;

@@ -1,104 +1,89 @@
-var Resolver = require('../lib/resolver');
+'use strict';
+const Resolver = require('../lib/resolver');
 
 /**
- * @method PromiseMethod
- * @param {object} namespace
- * @param {object} options
- * @returns {function}
+ * @class PromiseMethod
+ * @exports
  */
 
-module.exports = function PromiseMethod (namespace, options) {
-
-  var adapter = options.adapter;
-  if (typeof adapter !== 'function') throw new Error('PromiseMethod needs an adapter.');
-  
-  var Promise = adapter();
-  if (typeof Promise.defer !== 'function') throw new Error('PromiseMethod adapter must provide defer().');
+class PromiseMethod {
 
   /**
-   * @method $injector
-   * @description An injector function for a queue of promises. It handles
-   * promises as well as functions which return promises or values.
-   * @param {object[]} queue
+   * @param {object} options
+   * @return {function} $resolve
    */
 
-  function $injector (queue) {
-    var namespace = this;
-    var resolver = new Resolver();
-    var index = 0;
-   
-    while (queue.length) {
-      var item = queue.shift();
-      if (!item) return callback(new Error('not found: ' + order[index]));
-      if (item.params[item.params.length-1] === 'callback') item.params.pop();
-      resolver.provide(item.key, item.params, item.fn);
-      ++index;
-    }
+  constructor (options) {
+    return this.$resolve;
+  }
 
-    var defer = Promise.defer();
-    var order = resolver.resolve();
-    var items = order.map(resolver.byId);
-    next(defer, null);
-    return defer.promise;
+  /**
+   * @static defaultFunction
+   * @param {*} value
+   * @return {function}
+   */
+
+  static defaultFunction (value) {
+    return (a) => Promise.resolve(a);
+  }
+
+  /**
+   * @method $resolve
+   * @param {object[]} queue
+   * @param {function} $inject
+   * @return {Promise}
+   */
+
+  $resolve (queue, $inject) {
+    let namespace = this;
+    let items = Resolver.resolveQueue(queue);
+
+    return new Promise((resolve, reject) => {
+      next(resolve, reject, null);
+    });
 
     /**
      * @method next
-     * @description Handles the next queue item or resolves the $injector promise.
-     * @param {object} err
      * @private
+     * @param {function} resolve
+     * @param {function} reject
+     * @param {Error|null} err
      */
 
-    function next(defer, err) {
-      if (!items.length) return defer.resolve();
-      var item = items.shift();
-      var deferred = item.payload;
-
-      if (typeof item.payload === 'function') {
-        var params = item.params.map(namespace.$get);
-
-        deferred = item.payload.apply(namespace, params);
-
-        if (deferred && typeof deferred === 'object' && typeof deferred.then === 'function') {
-          deferred.then(handleResult, handleError);
-        } else {
-          handleResult(deferred);
-        }
-      } else {      
-        item.payload.then(handleResult, handleError);
+    function next (resolve, reject, err) {
+      if (err) {
+        return reject(err);
+      } else if (!items.length) {
+        return resolve();
       }
 
-      /**
-       * @method handleError
-       * @param {*} err
-       */
+      let item = items.shift();
+      let args = $inject(item.params);
 
-      function handleError(err) { defer.reject(err); }
+      if (typeof item.payload === 'function') {
+        let deferred = item.payload.apply(namespace, args);
+        if (typeof deferred.then !== 'function') {
+          return reject(new Error(`Promise expected:\n\n  ${item.payload}\n`));
+        }
+        deferred.then(handleResult, reject);
+      } else if (item.payload && typeof item.payload.then === 'function') {
+        item.payload.then(handleResult, reject);
+      } else {
+        handleResult(item.payload);
+      }
 
       /**
        * @method handleResult
+       * @private
        * @param {*} val
        */
 
-      function handleResult(val) {
-        namespace.$set(item.key, val);
-        next(defer, null);
+      function handleResult (val) {
+        namespace.set(item.key, val);
+        next(resolve, reject, null);
       }
-
     }
   }
-  
-  /**
-   * @method defaultFunction
-   * @description Getter for passthrough/non-promise arguments.
-   * @param {*} value
-   * @returns {function}
-   */
+}
 
-  $injector.defaultFunction = function (value) {
-    var defer = Promise.defer();
-    defer.resolve(value);
-    return defer.promise;
-  };
-
-  return $injector;
-};
+module.exports = PromiseMethod;

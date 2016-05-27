@@ -44,402 +44,624 @@
 /* 0 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(1);
+	'use strict';
 
-
-/***/ },
-/* 1 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var CallbackMethod = __webpack_require__(2);
-	var Namespace = __webpack_require__(4);
-	var Resolver = __webpack_require__(3);
-	var FN_RGX = /function(\s*)(\w*)[^(]*\(([^)]*)\)/m;
-
-	if (typeof window !== 'undefined') window.Di = Di;
-	module.exports = Di;
+	const Namespace = __webpack_require__(1);
+	const parseArgs = __webpack_require__(2);
+	const CallbackMethod = __webpack_require__(5);
 
 	/**
-	 * @method Di
-	 * @param {string} name
-	 * @param {object} options
-	 * @returns {object} namespace
+	 * @class Di
+	 * @exports
 	 */
 
-	function Di(name, options) {
-	  options = options || { method : CallbackMethod };
-
-	  var queue = [];
-	  var namespace = new Namespace(name);
-	  var $injector = null;
-
-	  namespace.$parseArgs = parseArgs;
-	  namespace.$provide = $provide;
-	  namespace.$resolve = function () {
-	    return $injector.apply(this, [queue].concat([].slice.apply(arguments)));
-	  };
-
-	  $injector = options.method(namespace, options);
-	  return namespace;
+	class Di {
 
 	  /**
-	   * Parses a function and returns an array of its parameters
-	   * @param {function()} fn
-	   * @return {string[]}
+	   * @param {function} Method
+	   * @param {string} name
+	   * @param {object} options
 	   */
 
-	  function parseFn(fn) {
-	    var s = fn.toString();
-	    var matches = FN_RGX.exec(s);
-	    if (!matches) return null;
-	    var params = [];
-	    if (matches[3].length) params = matches[3].split(/\s*,\s*/);
-	    return params;
-	  }
-
-	  /**
-	   * @method parseArray
-	   * @description Parses a minification-safe dependency notation, an array of
-	   * strings, ending with a function.
-	   * @param {...string, function} fn
-	   * @return {Object}
-	   */
-
-	  function parseArray(fn) {
-	    var params = [];
-	    for (var val, i = 0, l = fn.length; i < l; ++i) {
-	      if (typeof fn[i] === 'function') { fn = fn[i]; break; }
-	      params.push(fn[i]);
+	  constructor (Method, name, options = {}) {
+	    if (typeof Method !== 'function') {
+	      Method = CallbackMethod;
 	    }
-	    return {
-	      fn : fn,
-	      params : params
-	    };
-	  }
-
-	  /**
-	   * @method parseArgs
-	   * @param {*} fn
-	   * @returns {object} info
-	   */
-
-	  function parseArgs(fn) {
-	    var info = null;
-	    var params = [];
-	    if (!!fn && typeof fn === 'object' && typeof fn.length === 'number') {
-	      info = parseArray(fn);
-	      fn = info.fn;
-	      params = info.params;
-	    } else if (typeof fn === 'function') {
-	      info = parseFn(fn);
-	      params = info.slice();
-	    } else {
-	      fn = $injector.defaultFunction(arguments[0]);
-	    }
-	    return {
-	      fn : fn,
-	      params : params
-	    };
+	    let namespace = new Namespace(name);
+	    namespace._root = this;
+	    this.$get = namespace.get.bind(namespace);
+	    this.$set = namespace.set.bind(namespace);
+	    this._namespace = namespace;
+	    this._q = [];
+	    this._injector = new Method(options);
+	    this._defaultFunction = Method.defaultFunction;
 	  }
 
 	  /**
 	   * @method $provide
+	   * @chainable
 	   * @param {string} key
 	   * @param {*} fn
 	   * @param {boolean} passthrough
-	   * @returns {object} this
 	   */
 
-	  function $provide(key, fn, passthrough) {
-	    var info = null;
-	    var params = [];
+	  $provide (key, fn, passthrough) {
+	    let params = [];
 	    if (passthrough === true) {
-	      fn = $injector.defaultFunction(arguments[1]);
+	      fn = this._defaultFunction(fn);
 	    } else {
-	      info = parseArgs(fn);
+	      let info = parseArgs(fn);
 	      fn = info.fn;
 	      params = info.params;
 	    }
-	    queue.push({
-	      key : key,
-	      fn : fn,
-	      params : params
-	    });
+	    this._q.push({ key, fn, params });
 	    return this;
 	  }
 
+	  /**
+	   * @method $resolve
+	   * @param {*}
+	   * @return {*}
+	   */
+
+	  $resolve (...args) {
+	    let $inject = this.$inject.bind(this);
+	    let injectorArgs = [this._q, $inject].concat(args);
+	    return this._injector.apply(this._namespace, injectorArgs);
+	  }
+
+	  /**
+	   * @method $inject
+	   * @param {*} arg
+	   * @returns {[]*}
+	   */
+
+	  $inject (arg) {
+	    let namespace = this._namespace;
+	    let info = parseArgs(arg);
+	    let params = info.params;
+	    let values = params.map(namespace.get.bind(namespace));
+	    if (typeof info.fn !== 'function') {
+	      return values;
+	    }
+	    return info.fn.apply(namespace, values);
+	  }
 	}
 
+	if (typeof window !== 'undefined') {
+	  window.Di = Di;
+	}
+
+	module.exports = Di;
+
+
+/***/ },
+/* 1 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	const RGX_DELIMITER = /(\w+)\.?/ig;
+
+	class Namespace {
+
+	  /**
+	   * @param {string} id
+	   */
+
+	  constructor (id) {
+	    this._root = {};
+	    this.id = id;
+	  }
+
+	  get id () {
+	    return this._id;
+	  }
+
+	  set id (id) {
+	    this._id = id;
+	  }
+
+	  /**
+	   * @method get
+	   * @param {string} p
+	   */
+
+	  get (key) {
+	    key = key || '';
+
+	    if (this.cRgx) {
+	      key = key.replace(this.cRgx, '');
+	    }
+
+	    let ref = this._root;
+	    let match = null;
+	    let refKey = '';
+	    let index = -1;
+	    while ((match = RGX_DELIMITER.exec(key))) {
+	      ++index;
+	      refKey = match[1];
+	      if (refKey === this._id && index === 0) {
+	        continue;
+	      }
+	      ref = ref[refKey];
+	    }
+	    return ref;
+	  }
+
+	  /**
+	   * @method get
+	   * @param {string} p
+	   * @param {*} value
+	   */
+
+	  set (key, value) {
+	    key = key || '';
+	    let ref = this._root;
+	    let lastRef = this._root;
+	    let refKey = '';
+	    let index = -1;
+	    let match = null;
+
+	    while ((match = RGX_DELIMITER.exec(key))) {
+	      ++index;
+	      refKey = match[1];
+	      if (refKey === this._id && index === 0) {
+	        continue;
+	      }
+	      ref[refKey] = ref[refKey] || {};
+
+	      lastRef = ref;
+	      ref = ref[refKey];
+	    }
+
+	    lastRef[refKey] = value;
+	    return this;
+	  }
+	}
+
+	module.exports = Namespace;
 
 
 /***/ },
 /* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var Resolver = __webpack_require__(3);
+	'use strict';
+
+	const parseArray = __webpack_require__(3);
+	const introspect = __webpack_require__(4);
 
 	/**
-	 * @method nextTick
-	 * @see https://github.com/medikoo/next-tick
+	 * @method parseArguments
+	 * @param {*} fn
+	 * @param {function} defaultFunction
+	 * @returns {object} info
 	 */
 
-	var nextTick = (function nextTick () {
-	  // taken from Node.js
-	  if ((typeof process !== 'undefined') && process &&
-	      (typeof process.nextTick === 'function')) { return process.nextTick; }
-
-	  // W3C Draft
-	  // http://dvcs.w3.org/hg/webperf/raw-file/tip/specs/setImmediate/Overview.html
-	  if (typeof setImmediate === 'function') return function (cb) { setImmediate(cb); };
-	  // Wide available standard
-	  if (typeof setTimeout === 'function') { return function (cb) { setTimeout(cb, 0); }; }
-	  return null;
-	}());
-
-	/**
-	 * @method CallbackMethod
-	 * @public
-	 * @param {object} namespace
-	 * @param {object} options
-	 * @returns {function}
-	 */
-
-	module.exports = function CallbackMethod (namespace, options) {
-
-	  /**
-	   * @method $injector
-	   * @description An injector function for a queue of callback functions.
-	   * @param {object[]} queue
-	   */
-
-	  function $injector (queue, callback) {
-	    var namespace = this;
-	    var resolver = new Resolver();
-	    var index = 0;
-	    if (typeof callback !== 'function') throw new Error('E_NO_CALLBACK');
-
-	    while (queue.length) {
-	      var item = queue.shift();
-	      if (item.params[item.params.length-1] === 'callback') item.params.pop();
-	      resolver.provide(item.key, item.params, item.fn);
-	      ++index;
-	    }
-
-	    var order = resolver.resolve();
-	    var items = order.map(function (key) { return resolver.byId(key);  });
-
-	    /**
-	     * @method next
-	     * @description Handles the next queue item or calls back.
-	     * @param {object} err
-	     * @private
-	     */
-
-	    var next = function (err) {
-	      if (err) return callback(err);
-	      var item = items.shift();
-	      if (!item) return callback(null);
-
-	      var values = item.params.map(namespace.$get);
-
-	      /**
-	       * @method $injectorCallback
-	       * @param {object} err
-	       * @param {*} val
-	       * @exports
-	       */
-
-	      function $injectorCallback (err, val) {
-	        if (err) return next(err);
-	        namespace.$set(item.key, val);
-	        nextTick(function () { next(null); });
-	      }
-	      values.push($injectorCallback);
-
-	      nextTick(function () {
-	        item.payload.apply(namespace, values);
-	      });
-	    };
-
-	    next(null);
-	    return namespace;
+	function parseArguments (fn, defaultFunction) {
+	  let info = null;
+	  let params = [];
+	  if (!!fn && typeof fn === 'object' && typeof fn.length === 'number') {
+	    info = parseArray(fn);
+	    fn = info.fn;
+	    params = info.params;
+	  } else if (typeof fn === 'function') {
+	    info = introspect(fn);
+	    params = info.slice();
+	  } else if (typeof defaultFunction === 'function') {
+	    fn = defaultFunction(arguments[0]);
 	  }
-
-	  /**
-	   * @method defaultFunction
-	   * @description Getter for passthrough/non-function arguments.
-	   * @param {*} value
-	   * @returns {function}
-	   */
-
-	  $injector.defaultFunction = function (value) {
-	    return function (callback) { callback(null, value); };
+	  return {
+	    fn: fn,
+	    params: params
 	  };
+	}
 
-	  return $injector;
-	};
+	module.exports = parseArguments;
 
 
 /***/ },
 /* 3 */
 /***/ function(module, exports) {
 
+	'use strict';
+
 	/**
-	 * @method Resolver
-	 * @returns {object}
+	 * @method parseArray
+	 * @description Parses a minification-safe dependency notation, an array of
+	 * strings, ending with a function.
+	 * @param {...string, function} arr
+	 * @return {Object}
 	 */
 
-	function Resolver() {
-	  var queue = [];
+	function parseArray (arr) {
+	  let params = [];
+	  let fn = null;
 
-	  /**
-	   * @method getById
-	   * @param {string} id
-	   * @private
-	   */
-
-	  function getById (id) {
-	    for (var i = 0, l = queue.length; i < l; ++i) {
-	      var item = queue[i];
-	      if (item.key === id) return item;
-	    }
-	    return null;
+	  for (let val, i = 0, l = arr.length; i < l; ++i) {
+	    val = arr[i];
+	    if (typeof val === 'function') { fn = val; break; }
+	    params.push(val);
 	  }
-
-	  /**
-	   * @method resolve
-	   * @description Resolves and empties the current queue.
-	   */
-
-	  function resolve() {
-	    var resolved = [];
-
-	    /**
-	     * @method _resolve
-	     * @private
-	     */
-
-	    function _resolve(entry, unresolved) {
-	      if (resolved.indexOf(entry.key) !== -1) return;
-	      unresolved.push(entry.key);
-	      var params = entry.params.slice();
-	      for (var i = 0, l = params.length; i < l; ++i) {
-	        var dep = params[i];
-	        if (~resolved.indexOf(dep)) continue;
-	        if (~unresolved.indexOf(dep)) throw new Error('Circular: '  + entry.key + ' -> ' + dep);
-	        var queuedItem = getById(dep);
-	        _resolve({
-	          key : dep,
-	          params : queuedItem && queuedItem.params || []
-	        }, unresolved);
-	      }
-	      
-	      var index = unresolved.indexOf(entry.key);
-	      if (~index) unresolved.splice(index, 1);
-	      resolved.push(entry.key);
-	    }
-
-	    for (var j = 0, k = queue.length; j < k; ++j) _resolve(queue[j], []);
-	    return resolved;
-	  }
-
-	  /**
-	   * @method provide
-	   * @param {string} key
-	   * @param {string[]} dependencies
-	   * @param {*} payload
-	   */
-
-	  function provide(key, dependencies, payload) {
-	    queue.push({
-	      key : key,
-	      params : dependencies,
-	      payload : payload
-	    });
-	  }
-
-	  return {
-	    byId : getById,
-	    get length() { return queue.length; },
-	    provide : provide,
-	    resolve : resolve
-	  };
+	  return { fn, params };
 	}
 
-	module.exports = Resolver;
+	module.exports = parseArray;
 
 
 /***/ },
 /* 4 */
 /***/ function(module, exports) {
 
-	/**
-	 * @method Namespace
-	 * @param {string} $id
-	 * @returns {object}
-	 */
+	var isClassRegExp = /class/;
+	var hasCtorRegExp = /constructor\s*\(/;
+	var argumentsRegExp = /\(([\s\S]*?)\)/;
+	var classArgumentsRegExp = /constructor\s*\(([\s\S]*?)\)/;
+	var replaceRegExp = /[ ,\n\r\t]+/;
 
-	function Namespace($id) {
-	  if (!(this instanceof Namespace)) return new Namespace($id);
-	  var RGX = /(\w+)\.?/ig;
-
-	  var namespace = {
-	    get $id () {return $id; },
-	    $get : $get,
-	    $set : $set
-	  };
-
-	  /**
-	   * @method $get
-	   * @param {string} p 
-	   */
-
-	  function $get(p) {
-	    var ref = namespace;
-	    var match = null;
-	    var index = -1;
-	    while (( match = RGX.exec(p) )) {
-	      ++index;
-	      var key = match[1];
-	      if (!index && key === $id) continue;
-	      ref = ref[key] && ref[key];
-	    }
-	    return ref;
-	  }  
-
-	  /**
-	   * @method $get
-	   * @param {string} p 
-	   * @param {*} value
-	   */
-
-	  function $set(p, value) {
-	    var lastRef = null;
-	    var ref = namespace;
-	    var match = true;
-	    var key = null;
-	    var index = -1;
-
-	    while (match) {
-	      ++index;
-	      match = RGX.exec(p);
-	      if (!match) {
-	        lastRef[key] = value;
-	        break;
-	      }
-	      key = match[1];
-	      if (!index && key === $id) continue;
-	      ref[key] = ref[key] || {};
-	      lastRef = ref;
-	      ref = ref[key];
-	    }
-	    return namespace;
+	function findFirstCtor(fn){
+	  while (!hasCtorRegExp.test(fn) && isClassRegExp.test(fn)){
+	    fn = Object.getPrototypeOf(fn);
 	  }
-
-	  return namespace;
+	  return fn;
 	}
 
-	module.exports = Namespace;
+	module.exports = function (fn) {
+	  var isClass = isClassRegExp.test(fn);
+	  var regEx = argumentsRegExp;
+	  if (isClass){
+	    regEx = classArgumentsRegExp;
+	    fn = findFirstCtor(fn);
+	  }
+	  var results = regEx.exec(fn);
+	  if (null === results) return [];
+	  var fnArguments = results[1].trim();
+	  if (0 === fnArguments.length) return [];
+	  return fnArguments.split(replaceRegExp);
+	};
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	const Resolver = __webpack_require__(6);
+	const RGX_CALLBACK = /^(callback|cb|next)/;
+	const nextTick = typeof process !== 'undefined' ? process.nextTick : (typeof setImmediate !== 'undefined' ? setImmediate : setTimeout);
+
+	/**
+	 * @class CallbackMethod
+	 * @exports
+	 */
+
+	class CallbackMethod {
+
+	  /**
+	   * @param {object} options
+	   * @return {function} $resolve
+	   */
+
+	  constructor (options) {
+	    return this.$resolve;
+	  }
+
+	  /**
+	   * @static defaultFunction
+	   * @param {*} value
+	   * @return {function}
+	   */
+
+	  static defaultFunction (value) {
+	    return (callback) => callback(null, value);
+	  }
+
+	  /**
+	   * @method $resolve
+	   * @param {object[]} queue
+	   */
+
+	  $resolve (queue, $inject, callback) {
+	    let namespace = this;
+
+	    if (typeof callback !== 'function') {
+	      throw new Error('No callback');
+	    }
+
+	    let item = null;
+	    for (var i = 0, l = queue.length; i < l; i++) {
+	      item = queue[i];
+	      if (RGX_CALLBACK.test(item.params[item.params.length - 1])) {
+	        item.params.pop();
+	      }
+	    }
+	    let items = Resolver.resolveQueue(queue);
+
+	    next();
+
+	    /**
+	     * @method next
+	     * @private
+	     * @param {Error|null} err
+	     */
+
+	    function next (err) {
+	      if (err) {
+	        return callback(err);
+	      } else if (!items.length) {
+	        return callback(null);
+	      }
+
+	      let item = items.shift();
+
+	      if (typeof item.payload !== 'function') {
+	        return $injectorCallback(null, item.payload);
+	      }
+
+	      let args = $inject(item.params);
+	      args.push($injectorCallback);
+	      item.payload.apply(namespace, args);
+
+	      /**
+	       * @method $injectorCallback
+	       * @param {object} err
+	       * @param {*} val
+	       * @private
+	       */
+
+	      function $injectorCallback (err, val) {
+	        if (err) {
+	          return next(err);
+	        }
+	        namespace.set(item.key, val);
+	        nextTick(next);
+	      }
+	    }
+	  }
+	}
+
+	module.exports = CallbackMethod;
+
+
+/***/ },
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	const find = __webpack_require__(7);
+	const without = __webpack_require__(8);
+
+	/**
+	 * @class Resolver
+	 * @exports
+	 */
+
+	class Resolver {
+
+	  constructor () {
+	    this.resolved = [];
+	    this.queue = [];
+	  }
+
+	  get length () {
+	    return this.queue.length;
+	  }
+
+	  /**
+	   * @method byId
+	   * @param {string} id
+	   */
+
+	  byId (id) {
+	    if (Array.isArray(id)) {
+	      return id.map((queueId) => this.byId(queueId));
+	    }
+	    return find(this.queue, (item) => item.key === id) || null;
+	  }
+
+	  /**
+	   * @method put
+	   * @param {string} key
+	   * @param {*} payload
+	   */
+
+	  put (key, payload) {
+	    let item = this.byId(key);
+	    if (!item) {
+	      throw new Error(`${key} undefined`);
+	    }
+	    item.payload = payload;
+	  }
+
+	  /**
+	   * @method provide
+	   * @param {string} key
+	   * @param {string[]} params
+	   * @param {*} payload
+	   * @param {string} type
+	   */
+
+	  provide (key, params, payload, type) {
+	    this.queue.push({ key, params, payload, type });
+	  }
+
+	  /**
+	   * @method provideObjectNode
+	   * @param {string} key
+	   * @param {string[]} params
+	   * @param {*} obj
+	   * @param {string} type
+	   */
+
+	  provideObjectNode (key, params, obj, type) {
+	    let queuedItem = {key, params, type};
+	    Object.defineProperty(queuedItem, 'payload', {
+	      get: function () {
+	        return obj[key];
+	      }
+	    });
+	    this.queue.push(queuedItem);
+	  }
+
+	  /**
+	   * @static resolveQueue
+	   * @param {object[]} queue
+	   * @return {*}
+	   */
+
+	  static resolveQueue (queue) {
+	    let resolver = new Resolver();
+
+	    let item = null;
+
+	    while (queue.length) {
+	      item = queue.shift();
+	      resolver.provide(item.key, item.params, item.fn, item.type);
+	    }
+	    return resolver.byId(resolver.resolve());
+	  }
+
+	  /**
+	   * @method resolve
+	   * @description Resolves and empties the current queue.
+	   * @returns {string[]}
+	   */
+
+	  resolve () {
+	    let resolved = [];
+	    let _isResolved = (id) => !!(~this.resolved.indexOf(id) || ~resolved.indexOf(id));
+
+	    /**
+	     * @method _resolve
+	     * @private
+	     * @param {object} entry
+	     * @param {string[]} unresolved
+	     */
+
+	    let _resolve = (entry, unresolved) => {
+	      if (_isResolved(entry.key)) {
+	        return;
+	      }
+
+	      unresolved.push(entry.key);
+
+	      let params = entry.params.slice();
+
+	      for (let i = 0, l = params.length; i < l; ++i) {
+	        let dep = params[i];
+	        if (_isResolved(dep)) {
+	          continue;
+	        }
+	        if (~unresolved.indexOf(dep)) {
+	          throw new Error('Circular: ' + entry.key + ' -> ' + dep);
+	        }
+	        let queuedItem = this.byId(dep);
+	        _resolve({
+	          key: dep,
+	          params: queuedItem && queuedItem.params || []
+	        }, unresolved);
+	      }
+
+	      unresolved = without(unresolved, entry.key);
+	      resolved.push(entry.key);
+	    };
+
+	    for (let j = 0, k = this.queue.length; j < k; ++j) {
+	      _resolve(this.queue[j], []);
+	    }
+	    this.resolved = this.resolved.concat(resolved);
+	    return resolved;
+	  }
+	}
+
+	module.exports = Resolver;
+
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	function find(array, predicate, context) {
+	  if (typeof Array.prototype.find === 'function') {
+	    return array.find(predicate, context);
+	  }
+
+	  context = context || this;
+	  var length = array.length;
+	  var i;
+
+	  if (typeof predicate !== 'function') {
+	    throw new TypeError(predicate + ' is not a function');
+	  }
+
+	  for (i = 0; i < length; i++) {
+	    if (predicate.call(context, array[i], i, array)) {
+	      return array[i];
+	    }
+	  }
+	}
+
+	module.exports = find;
+
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function(root) {
+	  'use strict';
+
+	  /**
+	   * arrayWithout
+	   * @param {array} array - original array
+	   * @param {array} without - collection to omit
+	   * @example
+	   * arrayWithout(['a','b','c'], ['a','b','c']); // ['a']
+	   */
+	  function arrayWithout(a, w) {
+	    /*
+	     * Allows extension of prototype.
+	     * @example
+	     * Array.prototype.without = arrayWithout;
+	     * ['a','b','c'].without(['a','b','c']); // ['a']
+	     */
+	    if (Array.isArray(this)) {
+	      return arrayWithout.apply(null, [this].concat([].slice.call(arguments)));
+	    }
+
+	    a = Array.isArray(a) ? a.slice(0) : [];
+	    w = flatten([].slice.call(arguments, 1));
+	    for (var i = 0; i < w.length; i++) {
+	      var j = a.indexOf(w[i]);
+	      if (j > -1) {
+	        a.splice(j,1);
+	      }
+	    }
+	    return a;
+	  }
+
+	  function flatten(a) {
+	    return Array.isArray(a) ? [].concat.apply([], a.map(flatten)) : [a];
+	  }
+
+	  if (true) {
+	    if (typeof module !== 'undefined' && module.exports) {
+	      exports = module.exports = arrayWithout;
+	    }
+	    exports.arrayWithout = arrayWithout;
+	  } else if (typeof define === 'function' && define.amd) {
+	    define([], function() {
+	      return arrayWithout;
+	    });
+	  } else {
+	    root.arrayWithout = arrayWithout;
+	  }
+
+	})(this);
 
 
 /***/ }
