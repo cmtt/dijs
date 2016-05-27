@@ -9,6 +9,13 @@ describe('SyncMethod', () => {
     d.$resolve();
   });
 
+  it('passthrough using defaultFunction', () => {
+    let d = new Di(SyncMethod, null);
+    d.$provide('PI', Math.PI, true);
+    d.$resolve();
+    assert.equal(d.$get('PI'), Math.PI);
+  });
+
   it('provides', () => {
     let d = new Di(SyncMethod, 'Math');
     d.$provide('PI', Math.PI);

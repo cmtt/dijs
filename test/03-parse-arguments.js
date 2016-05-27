@@ -1,3 +1,5 @@
+'use strict';
+
 describe('parseArguments', () => {
   const parseArguments = require(basePath('lib', 'parse-arguments'));
 

@@ -9,6 +9,37 @@ describe('CallbackMethod', () => {
     d.$resolve(done);
   });
 
+  it('initializes by default with CallbackMethod', (done) => {
+    let d = new Di();
+    d.$provide('PI', Math.PI);
+    d.$resolve((err) => {
+      if (err) {
+        return done(err);
+      }
+      assert.equal(d.PI, Math.PI);
+      done();
+    });
+  });
+
+  it('passthrough using defaultFunction', (done) => {
+    let d = new Di(CallbackMethod, null);
+    d.$provide('PI', Math.PI, true);
+    d.$resolve((err) => {
+      if (err) {
+        return done(err);
+      }
+      assert.equal(d.$get('PI'), Math.PI);
+      done();
+    });
+  });
+
+  it('throws an error when no callback was provided', () => {
+    assert.throws(() => {
+      let d = new Di(CallbackMethod, null);
+      d.$resolve();
+    });
+  });
+
   it('provides via callbacks', (done) => {
     let d = new Di(CallbackMethod, 'Math');
     d.$provide('PI', (callback) => {

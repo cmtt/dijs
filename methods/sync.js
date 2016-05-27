@@ -25,7 +25,7 @@ class SyncMethod {
    */
 
   static defaultFunction (value) {
-    return (a) => a;
+    return () => value;
   }
 
   /**

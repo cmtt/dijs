@@ -4,7 +4,8 @@
   "description": "Asynchronous dependency injection framework for Node.js and browser environments",
   "main": "lib/di.js",
   "scripts": {
-    "test": "semistandard \"lib\/**\/*\" \"contrib\/**\/*\" \"methods\/**\/*\" && mocha"
+    "test": "semistandard \"lib/**/*\" \"contrib/**/*\" \"methods/**/*\" && mocha --harmony",
+    "coverage": "nyc --reporter=text-lcov npm test | coveralls"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
   "repository": {
@@ -27,19 +28,13 @@
   },
   "devDependencies": {
     "closurecompiler": "^1.5.3",
+    "coveralls": "^2.11.9",
+    "istanbul": "^0.4.3",
     "mocha": "^2.5.3",
+    "mocha-lcov-reporter": "^1.2.0",
+    "nyc": "^6.4.4",
     "semistandard": "^8.0.0",
     "webpack": "^1.13.1"
-  },
-  "standard": {
-    "globals": [
-      "afterEach",
-      "assert",
-      "basePath",
-      "beforeEach",
-      "describe",
-      "it"
-    ]
   },
   "semistandard": {
     "globals": [

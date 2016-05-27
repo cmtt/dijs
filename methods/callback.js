@@ -43,7 +43,7 @@ class CallbackMethod {
     }
 
     let item = null;
-    for (var i = 0, l = queue.length; i < l; i++) {
+    for (let i = 0, l = queue.length; i < l; i++) {
       item = queue[i];
       if (RGX_CALLBACK.test(item.params[item.params.length - 1])) {
         item.params.pop();
@@ -58,10 +58,8 @@ class CallbackMethod {
      * @param {Error|null} err
      */
 
-    function next (err) {
-      if (err) {
-        return callback(err);
-      } else if (!items.length) {
+    function next () {
+      if (!items.length) {
         return callback(null);
       }
 
@@ -84,7 +82,7 @@ class CallbackMethod {
 
       function $injectorCallback (err, val) {
         if (err) {
-          return next(err);
+          return callback(err);
         }
         namespace.set(item.key, val);
         nextTick(next);

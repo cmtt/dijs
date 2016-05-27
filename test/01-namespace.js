@@ -6,7 +6,9 @@ describe('Namespace', () => {
   it('initializes', () => {
     let n = new Namespace('test');
     assert.ok(n);
-    assert.ok(n.get('test'));
+    assert.deepEqual(n.get('test'), {});
+    assert.equal(n.id, 'test');
+    assert.equal(n._id, 'test');
   });
 
   it('gets a subpath', () => {
@@ -41,10 +43,10 @@ describe('Namespace', () => {
 
   it('does not confuse sub-children with the same name', () => {
     let n = new Namespace('n');
-    n.set('n.n', 'nn');
-    assert.deepEqual(n.get('n'), { n: 'nn' });
-    assert.deepEqual(n.get('n.n'), 'nn');
+    n.set('n.n.n', 'nn');
+    assert.deepEqual(n.get('n'), { n: { n: 'nn' } });
+    assert.deepEqual(n.get('n.n.n'), 'nn');
     n.set('n.nn.n', 'nnn');
-    assert.deepEqual(n.get('n'), { n: 'nn', nn: { n: 'nnn' } });
+    assert.deepEqual(n.get('n'), { n: { n: 'nn' }, nn: { n: 'nnn' } });
   });
 });

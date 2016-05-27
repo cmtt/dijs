@@ -2,6 +2,8 @@
 module.exports = {
   entry: './lib/di.js',
   output: {
+    libraryTarget: 'var',
+    library: 'Di',
     filename: 'dist/di.js'
   },
   node: {

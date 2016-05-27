@@ -1,5 +1,23 @@
 # dijs
 
+<div>
+  <a href="https://travis-ci.org/cmtt/dijs">
+    <img src="https://img.shields.io/travis/cmtt/dijs/develop.svg?style=flat-square" alt="Build Status">
+  </a>
+  <a href="https://www.npmjs.org/package/dijs">
+    <img src="https://img.shields.io/npm/v/dijs.svg?style=flat-square" alt="npm version">
+  </a>
+  <a href="http://spdx.org/licenses/MIT">
+    <img src="https://img.shields.io/npm/l/dijs.svg?style=flat-square" alt="npm licence">
+  </a>
+  <a href="https://coveralls.io/github/cmtt/dijs">
+    <img src="https://img.shields.io/coveralls/cmtt/dijs/develop.svg?style=flat-square" alt="Code coverage">
+  </a>
+  <a href="http://www.ecma-international.org/ecma-262/6.0/">
+    <img src="https://img.shields.io/badge/ES-2015-F0DB4F.svg?style=flat-square" alt="ECMAScript 2015">
+  </a>
+</div>
+
 dijs is a dependency injection framework for Node.js and browser environments.
 
 It is inspired by [AngularJS](http://www.angularjs.org/) 1.x and allows to

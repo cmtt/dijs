@@ -9,6 +9,15 @@ describe('PromiseMethod', () => {
     d.$resolve().then(done, done);
   });
 
+  it('passthrough using defaultFunction', (done) => {
+    let d = new Di(PromiseMethod, null);
+    d.$provide('PI', Math.PI, true);
+    d.$resolve().then(() => {
+      assert.equal(d.$get('PI'), Math.PI);
+      done();
+    }, done);
+  });
+
   it('provides', (done) => {
     let d = new Di(PromiseMethod, 'Math');
     d.$provide('PI', Promise.resolve(Math.PI));
@@ -22,6 +31,40 @@ describe('PromiseMethod', () => {
       assert.equal(d.test, 0);
       done();
     }, done);
+  });
+
+  it('handles errors', (done) => {
+    let d = new Di(PromiseMethod, 'Math');
+    d.$provide('PI', Promise.resolve(Math.PI));
+    d.$provide('2PI', (PI) => Promise.reject(new Error('Error thrown')));
+    d.$provide('test', ['PI', '2PI', (PI, twoPI) => {
+      return Promise.resolve(PI - (twoPI * 0.5));
+    }]);
+
+    d.$resolve().then(() => {
+      done(new Error('Error expected'));
+    }, (err) => {
+      assert.ok(err);
+      assert.equal(err.message, 'Error thrown');
+      done();
+    });
+  });
+
+  it('Returns an error when a function does not return a Promise', (done) => {
+    let d = new Di(PromiseMethod, 'Math');
+    d.$provide('PI', Math.PI);
+    d.$provide('2PI', (PI) => Promise.resolve(PI * 2));
+    d.$provide('test', ['PI', '2PI', (PI, twoPI) => {
+      return PI - (twoPI * 0.5);
+    }]);
+
+    d.$resolve().then(() => {
+      done(new Error('Error expected'));
+    }, (err) => {
+      assert.ok(err);
+      assert.ok(err.message.indexOf('Promise expected') > -1);
+      done();
+    });
   });
 
   it('provides via minification-ready syntax', (done) => {
