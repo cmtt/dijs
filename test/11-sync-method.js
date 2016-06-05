@@ -9,6 +9,14 @@ describe('SyncMethod', () => {
     d.$resolve();
   });
 
+  it('error when declaring unknwon dependencies', () => {
+    let d = new Di(SyncMethod, null);
+    d.$provide('2PI', ['PI', (PI) => 2 * PI]);
+    assert.throws(() => {
+      d.$resolve();
+    });
+  });
+
   it('passthrough using defaultFunction', () => {
     let d = new Di(SyncMethod, null);
     d.$provide('PI', Math.PI, true);

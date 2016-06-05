@@ -1,6 +1,7 @@
 'use strict';
 
 const Resolver = require('../lib/resolver');
+const ResolverError = require('../lib/resolver-error');
 const RGX_CALLBACK = /^(callback|cb|next)/;
 const nextTick = typeof process !== 'undefined' ? process.nextTick : (typeof setImmediate !== 'undefined' ? setImmediate : setTimeout);
 
@@ -37,9 +38,10 @@ class CallbackMethod {
 
   $resolve (queue, $inject, callback) {
     let namespace = this;
+    let index = -1;
 
     if (typeof callback !== 'function') {
-      throw new Error('No callback');
+      throw new Error('Callback function expected');
     }
 
     let item = null;
@@ -59,11 +61,15 @@ class CallbackMethod {
      */
 
     function next () {
-      if (!items.length) {
+      ++index;
+      if (index === items.length) {
         return callback(null);
       }
-
-      let item = items.shift();
+      let item = items[index];
+      if (item === null) {
+        let queueItem = queue[index];
+        return callback(new ResolverError(queueItem));
+      }
 
       if (typeof item.payload !== 'function') {
         return $injectorCallback(null, item.payload);

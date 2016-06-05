@@ -8,13 +8,13 @@
 
 module.exports = [
   // {
-  //   fn : function (a = {foo: "ba)r", baz: 123}, cb) {return a * 3},
-  //   params : ["a","cb"]
+  //   fn: function (a = {foo: 'ba)r', baz: 123}, cb) {return a * 3},
+  //   params: ['a','cb']
   // },
-  // {
-  //   fn : function (b, callback) {callback(null, b + 3)},
-  //   params : ["b","callback"]
-  // },
+  {
+    fn: function (b, callback) { callback(null, b + 3); },
+    params: ['b', 'callback']
+  },
   {
     fn: function (c) { return c * 3; },
     params: ['c']
@@ -28,28 +28,8 @@ module.exports = [
     params: []
   },
   // {
-  //   fn : function named (a = {foo: "ba)r", baz: 123}, cb) {return a * 3},
-  //   params : ["a","cb"]
-  // },
-  // {
-  //   fn : function named (b, callback) {callback(null, b + 3)},
-  //   params : ["b","callback"]
-  // },
-  // {
-  //   fn : function named (c) {return c * 3},
-  //   params : ["c"]
-  // },
-  // {
-  //   fn : function named () {return 321},
-  //   params : []
-  // },
-  // {
-  //   fn : function named () {},
-  //   params : []
-  // },
-  // {
-  //   fn : (foo = {done: (x) => console.log({ value: x })}, bar) => {return foo.done},
-  //   params : ["foo","bar"]
+  //   fn: (foo = {done: (x) => console.log({ value: x })}, bar) => {return foo.done},
+  //   params: ['foo','bar']
   // },
   {
     fn: (z, cb) => { cb(null, z + 3); },
@@ -72,12 +52,12 @@ module.exports = [
     params: ['a']
   },
   // {
-  //   fn : d => d * 3 * d,
-  //   params : ["d"]
+  //   fn: d => d * 3 * d,
+  //   params: ['d']
   // },
   // {
-  //   fn : e => {return e * 3 * e},
-  //   params : ["e"]
+  //   fn: e => {return e * 3 * e},
+  //   params: ['e']
   // },
   {
     fn: (a, b) => a + 3 + b,

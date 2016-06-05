@@ -24,10 +24,6 @@ It is inspired by [AngularJS](http://www.angularjs.org/) 1.x and allows to
 choose between synchronous and asynchronous resolution patterns in an
 non-opinionated way.
 
-````
-This document is currently being rewritten.
-````
-
 # Example
 ````js
   const Di = require('dijs');
@@ -37,7 +33,6 @@ This document is currently being rewritten.
   // The $provide and $resolve methods expect callbacks.
 
   let d = new Di(null, 'Math');
-
   d.$provide('PI', function (callback) {
     callback(null, Math.PI);
   });
@@ -57,38 +52,129 @@ This document is currently being rewritten.
   });
 });
 ````
+
 # Options
+
 ## assign
 
-# Resolution methods
+By default, all provided values are being set on the dijs instance. This
+behavior can be turned off:
 
-## CallbackMethod
+````js
+  const Di = require('dijs');
+  let d = new Di(null, 'Math', { assign : false });
 
-## PromiseMethod
+  d.$provide('PI', function (callback) {
+    callback(null, Math.PI);
+  });
+  d.$resolve(function (err) {
+    if (err) {
+      throw err;
+    }
+    console.log(`d.PI is undefined`, d.PI === undefined);
+    console.log(`d.$get("PI") equals Math.PI`, d.$get('PI') === Math.PI);
+  });
+});
+````
 
-## SyncMethod
+# Usage
 
-# Instance methods
+## new Di(Method, name, options)
 
-## Di.$get(id)
+Returns a new dijs instance with the given method (CallbackMethod is the
+default one).
+
+## Instance methods
+
+### $get(id)
 
 Returns the (previously provided) sub-module specified by a dot-delimited id.
 
-## Di.$inject(arg)
+### $inject(arg)
 
-## Di.$provide(id, object, passthrough)
+Calls a function with (already-provided) dependencies. It is required to call
+$resolve beforehand.
 
-Provides a module in the namespace under the supplied id. If passthrough is
-set, the object will be just passed through, no dependencies are looked up this
-way.
+Dependant on the current resolution method, this function is synchronous or
+asynchronous
 
-## Di.$resolve()
+### $provide(key, object, passthrough)
+
+Provides a module in the namespace with the given key.
+
+If passthrough is set, the object will be just passed through, no dependencies
+are looked up this way.
+
+### $resolve()
 
 Resolves the dependency graph.
 
-## Di.$set(id, value)
+This method might take a callback function (in case of the default
+CallbackMethod) or return a promise with PromiseMethod.
+
+### Di.$set(id, value)
 
 Sets a value in the namespace, specified by a dot-delimited path.
+
+# Resolution methods
+
+By default, dijs uses the asynchronous CallbackMethod in order to resolve
+dependencies.
+
+## CallbackMethod
+
+Asynchronous providing and resolving dependencies using Node.js-style callback
+functions.
+
+It is expected that the last parameter of your callback functions is called
+"callback", "cb" or "next".
+
+This function takes an error (or a falsy value like null) as first argument. The
+second argument should be the provided value.
+
+````js
+  let d = new Di();
+  d.$provide('PI', (callback) => { // alternative names: cb or next
+    callback(null, Math.PI);
+  });
+
+  d.$resolve((err) => {
+    if (err) {
+      return done(err);
+    }
+    assert.equal(d.PI, Math.PI);
+    done();
+  });
+````
+
+## PromiseMethod
+
+Provides and resolves dependencies using the ES2015 Promise API.
+
+````js
+  let d = new Di();
+  d.$provide('PI', Promise.resolve(Math.PI));
+  d.$provide('2PI', (PI) => Promise.resolve(2 * Math.PI));
+  d.$resolve().then(() => {
+    assert.equal(d['2PI'], 2 * Math.PI);
+    done();
+  }, (err) => {
+    done(err);
+  });
+````
+
+## SyncMethod
+
+Synchronous way to provide and resolve depdencies.
+
+````js
+  let d = new Di(SyncMethod);
+  d.$provide('PI', Math.PI);
+  d.$provide('2PI', (PI) => 2 * Math.PI);
+  d.$resolve();
+  assert.equal(d['2PI'], 2 * Math.PI);
+````
+
 
 # License
 

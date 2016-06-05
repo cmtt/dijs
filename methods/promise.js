@@ -1,5 +1,6 @@
 'use strict';
 const Resolver = require('../lib/resolver');
+const ResolverError = require('../lib/resolver-error');
 
 /**
  * @class PromiseMethod
@@ -36,8 +37,8 @@ class PromiseMethod {
 
   $resolve (queue, $inject) {
     let namespace = this;
+    let index = -1;
     let items = Resolver.resolveQueue(queue);
-
     return new Promise((resolve, reject) => {
       next();
 
@@ -47,11 +48,17 @@ class PromiseMethod {
        */
 
       function next () {
-        if (!items.length) {
+        ++index;
+        if (index === items.length) {
           return resolve();
         }
 
-        let item = items.shift();
+        let item = items[index];
+        if (item === null) {
+          let queueItem = queue[index];
+          return reject(new ResolverError(queueItem));
+        }
+
         let args = $inject(item.params);
         if (typeof item.payload === 'function') {
           let deferred = item.payload.apply(namespace, args);

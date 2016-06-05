@@ -33,6 +33,19 @@ describe('PromiseMethod', () => {
     }, done);
   });
 
+  it('error when declaring unknwon dependencies', (done) => {
+    let d = new Di(PromiseMethod, null);
+    d.$provide('2PI', (PI) => {
+      return Promise.resolve(2 * PI);
+    });
+    d.$resolve().then(() => {
+      done(new Error('Error expected'));
+    }, (err) => {
+      assert.ok(err);
+      done();
+    });
+  });
+
   it('handles errors', (done) => {
     let d = new Di(PromiseMethod, 'Math');
     d.$provide('PI', Promise.resolve(Math.PI));

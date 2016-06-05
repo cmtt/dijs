@@ -4,6 +4,7 @@
 
   - ES2015 rewrite
   - support for parsing ES2015 functions using a fork of [node-introspect](https://github.com/orzarchi/node-introspect)
+  - throwing an error when dependencies were not found when resolving
   - adding "Method" to constructor
   - adding "assign" option in order to disable variable assignation to the Di
     instance

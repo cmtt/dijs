@@ -33,6 +33,16 @@ describe('Namespace', () => {
     assert.equal(n._root.a.bool, true);
   });
 
+  it('sets paths using falsy values', () => {
+    let n = new Namespace('n');
+    n.set('n.0.string', 1234);
+    assert.deepEqual(n._root[0], { string: '1234' });
+    assert.equal(n.get('n.0.string'), '1234');
+    assert.equal(n._root[0].string, '1234');
+    n.set('0.bool', true);
+    assert.equal(n._root[0].bool, true);
+  });
+
   it('is chainable', () => {
     let n = new Namespace('n');
     let value = n

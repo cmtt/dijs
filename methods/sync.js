@@ -1,5 +1,6 @@
 'use strict';
 const Resolver = require('../lib/resolver');
+const ResolverError = require('../lib/resolver-error');
 
 /**
  * @class SyncMethod
@@ -40,6 +41,10 @@ class SyncMethod {
     let item = null;
     for (var i = 0, l = items.length; i < l; i++) {
       item = items[i];
+      if (item === null) {
+        let queueItem = queue[i];
+        throw new ResolverError(queueItem);
+      }
       let args = $inject(item.params);
       let val = null;
       if (typeof item.payload === 'function') {
@@ -49,7 +54,6 @@ class SyncMethod {
       }
       namespace.set(item.key, val);
     }
-    items.length = 0;
   }
 }
 

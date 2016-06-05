@@ -40,6 +40,17 @@ describe('CallbackMethod', () => {
     });
   });
 
+  it('error when declaring unknwon dependencies', (done) => {
+    let d = new Di(CallbackMethod, null);
+    d.$provide('2PI', (PI, callback) => {
+      callback(null);
+    });
+    d.$resolve((err) => {
+      assert.ok(err);
+      done();
+    });
+  });
+
   it('provides via callbacks', (done) => {
     let d = new Di(CallbackMethod, 'Math');
     d.$provide('PI', (callback) => {
