@@ -1,4 +1,3 @@
-// https://github.com/webpack/docs/wiki/configuration
 module.exports = {
   entry: './lib/di.js',
   output: {

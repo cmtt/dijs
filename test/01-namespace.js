@@ -51,7 +51,7 @@ describe('Namespace', () => {
     assert.equal(value, '1234');
   });
 
-  it('does not confuse sub-children with the same name', () => {
+  it('does not confuse children with the same name', () => {
     let n = new Namespace('n');
     n.set('n.n.n', 'nn');
     assert.deepEqual(n.get('n'), { n: { n: 'nn' } });
