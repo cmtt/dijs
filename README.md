@@ -2,7 +2,7 @@
 
 <div>
   <a href="https://travis-ci.org/cmtt/dijs">
-    <img src="https://img.shields.io/travis/cmtt/dijs/develop.svg?style=flat-square" alt="Build Status">
+    <img src="https://img.shields.io/travis/cmtt/dijs/master.svg?style=flat-square" alt="Build Status">
   </a>
   <a href="https://www.npmjs.org/package/dijs">
     <img src="https://img.shields.io/npm/v/dijs.svg?style=flat-square" alt="npm version">
@@ -11,7 +11,7 @@
     <img src="https://img.shields.io/npm/l/dijs.svg?style=flat-square" alt="npm licence">
   </a>
   <a href="https://coveralls.io/github/cmtt/dijs">
-    <img src="https://img.shields.io/coveralls/cmtt/dijs/develop.svg?style=flat-square" alt="Code coverage">
+    <img src="https://img.shields.io/coveralls/cmtt/dijs/master.svg?style=flat-square" alt="Code coverage">
   </a>
   <a href="http://www.ecma-international.org/ecma-262/6.0/">
     <img src="https://img.shields.io/badge/ES-2015-F0DB4F.svg?style=flat-square" alt="ECMAScript 2015">
@@ -29,7 +29,7 @@ non-opinionated way.
   const Di = require('dijs');
 
   // Initialize a new dijs instance. By default, this will use "CallbackMethod",
-  // thus the first argument is "null".
+  // thus the first argument is "null" (instead providing another method).
   // The $provide and $resolve methods expect callbacks.
 
   let d = new Di(null, 'Math');
@@ -175,6 +175,66 @@ Synchronous way to provide and resolve depdencies.
   assert.equal(d['2PI'], 2 * Math.PI);
 ````
 
+# Reference
+
+## Notation
+
+If you don't pass a value through, you can choose between the function and the
+array notation to describe the module's dependencies. In any case, you will need
+to pass a function whose return value gets stored in the namespace. Its
+parameters describe its dependencies.
+
+### function notation
+
+To describe a dependency, you can pass a function whose parameters declare the
+other modules on which it should depend.
+
+Note: You cannot inject dot-delimited dependencies with this notation.
+
+````js
+  var mod = new Di();
+  mod.$provide('Pi',Math.PI, true);
+  mod.$provide('2Pi', function (Pi, callback) { callback(null, return 2*Pi); });
+````
+
+### array notation (minification-safe)
+
+When your code is going to be minified or if you are about to make use of nested
+namespaces, the array notation is safer to use. All dependencies are listed as
+strings in the first part of the array, the last argument must be the actual
+module function.
+
+````js
+  var mod = new Di();
+  mod.$provide('Math.Pi',Math.PI, true);
+  mod.$provide('2Pi', ['Math.Pi', function (Pi, callback) {
+    callback(null, 2*Pi);
+  }]);
+````
+
+# Namespacing
+
+Each dijs instance has a new namespace instance at its core. Namespaces provide
+getter/setter methods for sub-paths:
+
+````js
+  var Namespace = require('dijs/lib/namespace');
+  var namespace = new Namespace('home');
+  namespace.floor = { chair : true };
+  assert.deepEqual(namespace.$get('home.floor'), { chair : true})
+  namespace.$set('home.floor.chairColor', 'blue');
+  assert.deepEqual(namespace.floor, { chair: true, chairColor: 'blue' });
+````
+
+Please note that dijs assigns all namespace values to instances. You can disable
+this behavior using the "assign" option (see above).
+
+# Usage in the browser
+
+Bundled versions are available in the dist/ folder.
+
+You can create a minified build with Google's Closure compiler by running
+````make```` in the project directory.
 
 # License
 

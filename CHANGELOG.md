@@ -1,17 +1,17 @@
 # Changelog
 
-0.2.0 -
+0.2.0 - 06/07/2016
 
   - ES2015 rewrite
-  - support for parsing ES2015 functions using a fork of [node-introspect](https://github.com/orzarchi/node-introspect)
-  - throwing an error when dependencies were not found when resolving
-  - adding "Method" to constructor
+  - parsing ES2015 functions using a fork of [node-introspect](https://github.com/orzarchi/node-introspect)
+  - throwing an error when dependencies were not found
+  - adding "Method" to Di's constructor
   - adding "assign" option in order to disable variable assignation to the Di
     instance
+  - adding $inject
   - deprecating the legacy API in favor of SyncMethod
   - deprecating Promise adapter in favor of ES2015 Promises
   - removing Build system in favor of Makefile
-  - $inject
 
 0.1.1 - 04/21/2016
 
