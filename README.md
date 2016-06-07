@@ -2,7 +2,7 @@
 
 <div>
   <a href="https://travis-ci.org/cmtt/dijs">
-    <img src="https://img.shields.io/travis/cmtt/dijs/master.svg?style=flat-square" alt="Build Status">
+    <img src="https://img.shields.io/travis/cmtt/dijs.svg?style=flat-square" alt="Build Status">
   </a>
   <a href="https://www.npmjs.org/package/dijs">
     <img src="https://img.shields.io/npm/v/dijs.svg?style=flat-square" alt="npm version">
