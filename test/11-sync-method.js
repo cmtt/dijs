@@ -24,6 +24,13 @@ describe('SyncMethod', () => {
     assert.equal(d.$get('PI'), Math.PI);
   });
 
+  it('$provideValue using defaultFunction', () => {
+    let d = new Di(SyncMethod, null);
+    d.$provideValue('PI', Math.PI);
+    d.$resolve();
+    assert.equal(d.$get('PI'), Math.PI);
+  });
+
   it('provides', () => {
     let d = new Di(SyncMethod, 'Math');
     d.$provide('PI', Math.PI);
@@ -137,5 +144,25 @@ describe('SyncMethod', () => {
     d.$resolve();
     let order = d.$inject((PI) => PI * 2);
     assert.equal(order, Math.PI * 2);
+  });
+
+  it('$annotate', () => {
+    let d = new Di(SyncMethod);
+    d.$provide('PI', Promise.resolve(Math.PI));
+    d.$provideValue('RAD_TO_DEG', (180 / Math.PI));
+    d.$resolve();
+    class TestClass {
+      constructor (PI, RAD_TO_DEG) {
+        this.PI = PI;
+        this.RAD_TO_DEG = RAD_TO_DEG;
+      }
+
+      deg (value) {
+        return value * this.RAD_TO_DEG;
+      }
+    }
+    let AnnotatedTestClass = d.$annotate(TestClass);
+    let a = new AnnotatedTestClass();
+    assert.equal(a.deg(Math.PI), 180);
   });
 });

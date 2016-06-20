@@ -31,6 +31,7 @@ class SyncMethod {
 
   /**
    * @method $resolve
+   * @chainable
    * @param {object[]} queue
    * @param {function} $inject
    */
@@ -54,6 +55,7 @@ class SyncMethod {
       }
       namespace.set(item.key, val);
     }
+    return this._root;
   }
 }
 

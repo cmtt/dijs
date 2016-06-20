@@ -30,7 +30,7 @@ describe('parseArguments', () => {
     assert.deepEqual(result, { fn, params });
   });
 
-  it('should work for ES6 class methods - parse method from instance', () => {
+  it('should work for ES2015 class methods - parse method from instance', () => {
     class EqualityChecker {
       isEqual (a, b) { /* istanbul ignore next */ return a === b; }
     }
@@ -40,7 +40,7 @@ describe('parseArguments', () => {
     assert.deepEqual(actual.params, ['a', 'b']);
   });
 
-  it('should work for ES6 class methods - parse method from prototype', () => {
+  it('should work for ES2015 class methods - parse method from prototype', () => {
     class Baz {
       qux (x, y) { /* istanbul ignore next */ return x + y; }
     }
@@ -49,13 +49,34 @@ describe('parseArguments', () => {
     assert.deepEqual(actual.params, ['x', 'y']);
   });
 
-  it('should parse correctly ES6 method in `function-less` notation', () => {
+  it('should parse correctly ES2015 method in `function-less` notation', () => {
     let obj = {
       foobar (abc, def) { /* istanbul ignore next */ return abc * def; }
     };
 
     let actual = parseArguments(obj.foobar);
     assert.deepEqual(actual.params, ['abc', 'def']);
+  });
+
+  it('parses functions with "$inject" property', () => {
+    function TestFunction () {
+      return arguments[0] * 2;
+    }
+
+    TestFunction.$inject = ['PI'];
+    let actual = parseArguments(TestFunction);
+    assert.deepEqual(actual.params, ['PI']);
+  });
+
+  it('parses E2015 classes with "$inject" static property', () => {
+    class TestClass {
+      static get $inject () {
+        return ['PI'];
+      }
+    }
+
+    let actual = parseArguments(TestClass);
+    assert.deepEqual(actual.params, ['PI']);
   });
 
   TESTS.forEach((test) => {

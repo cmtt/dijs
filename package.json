@@ -1,10 +1,10 @@
 {
   "name": "dijs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Asynchronous dependency injection framework for Node.js and browser environments",
   "main": "lib/di.js",
   "scripts": {
-    "test": "semistandard \"lib/**/*\" \"contrib/**/*\" \"methods/**/*\" && mocha --harmony",
+    "test": "semistandard \"lib/**/*\" \"contrib/**/*\" \"methods/**/*\" \"test/**/*\"  && mocha --harmony",
     "coverage": "nyc --reporter=text-lcov npm test | coveralls"
   },
   "author": "Matthias Thoemmes <git@gmx.org>",
@@ -29,10 +29,10 @@
   "devDependencies": {
     "closurecompiler": "^1.5.3",
     "coveralls": "^2.11.9",
-    "istanbul": "^0.4.3",
+    "istanbul": "^0.4.4",
     "mocha": "^2.5.3",
     "mocha-lcov-reporter": "^1.2.0",
-    "nyc": "^6.4.4",
+    "nyc": "^6.6.1",
     "semistandard": "^8.0.0",
     "webpack": "^1.13.1"
   },

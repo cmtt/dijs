@@ -18,6 +18,15 @@ describe('PromiseMethod', () => {
     }, done);
   });
 
+  it('$provideValue using defaultFunction', (done) => {
+    let d = new Di(PromiseMethod, null);
+    d.$provideValue('PI', Math.PI, true);
+    d.$resolve().then(() => {
+      assert.equal(d.$get('PI'), Math.PI);
+      done();
+    }, done);
+  });
+
   it('provides', (done) => {
     let d = new Di(PromiseMethod, 'Math');
     d.$provide('PI', Promise.resolve(Math.PI));
@@ -188,12 +197,35 @@ describe('PromiseMethod', () => {
     }, done);
   });
 
-  it('$inject', () => {
+  it('$inject', (done) => {
     let d = new Di(PromiseMethod);
     d.$provide('PI', Promise.resolve(Math.PI));
     d.$resolve().then(() => {
       let order = d.$inject((PI) => PI * 2);
       assert.equal(order, Math.PI * 2);
-    });
+      done();
+    }, done);
+  });
+
+  it('$annotate', (done) => {
+    let d = new Di(PromiseMethod);
+    d.$provide('PI', Promise.resolve(Math.PI));
+    d.$provideValue('RAD_TO_DEG', (180 / Math.PI));
+    d.$resolve().then(() => {
+      class TestClass {
+        constructor (PI, RAD_TO_DEG) {
+          this.PI = PI;
+          this.RAD_TO_DEG = RAD_TO_DEG;
+        }
+
+        deg (value) {
+          return value * this.RAD_TO_DEG;
+        }
+      }
+      let AnnotatedTestClass = d.$annotate(TestClass);
+      let a = new AnnotatedTestClass();
+      assert.equal(a.deg(Math.PI), 180);
+      done();
+    }, done);
   });
 });

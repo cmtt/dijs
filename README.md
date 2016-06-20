@@ -21,38 +21,46 @@
 dijs is a dependency injection framework for Node.js and browser environments.
 
 It is inspired by [AngularJS](http://www.angularjs.org/) 1.x and allows to
-choose between synchronous and asynchronous resolution patterns in an
-non-opinionated way.
+choose between synchronous and asynchronous (using callbacks and promises)
+resolution patterns in an non-opinionated way.
+
+Featured on [DailyJS](http://dailyjs.com/2014/05/25/angular-roundup/)
 
 # Example
+
 ````js
   const Di = require('dijs');
 
+  class TestClass {
+    constructor (PI, RAD_TO_DEG) {
+      this.PI = PI;
+      this.RAD_TO_DEG = RAD_TO_DEG;
+    }
+
+    deg (value) {
+      return value * this.RAD_TO_DEG;
+    }
+  }
+
   // Initialize a new dijs instance. By default, this will use "CallbackMethod",
   // thus the first argument is "null" (instead providing another method).
-  // The $provide and $resolve methods expect callbacks.
+  // The $provide and $resolve method expect callback functions.
 
-  let d = new Di(null, 'Math');
-  d.$provide('PI', function (callback) {
-    callback(null, Math.PI);
-  });
-  d.$provide('2PI', function (PI, callback) {
-    callback(null, 2 * PI);
-  });
-  d.$provide('zero', ['PI', '2PI', function (PI, twoPI, callback) {
-    callback(null, PI - (twoPI * 0.5));
-  }]);
-  d.$resolve(function (err) {
+  let instance = new Di(null)
+  .$provideValue('PI', Math.PI)
+  .$provide('RAD_TO_DEG', (PI, callback) => callback(null, (180 / PI)))
+  .$resolve((err) => {
     if (err) {
       throw err;
     }
-    console.log(`PI equals Math.PI`, d.PI === Math.PI);
-    console.log(`2PI equals 2*PI`, d['2PI'] === 2 * Math.PI);
-    console.log(`zero equals 0`, d.$get('Math.zero') === 0);
-  });
-});
-````
+    let AnnotatedTestClass = instance.$annotate(TestClass);
+    let a = new AnnotatedTestClass();
 
+    // logs 180
+    console.log(a.deg(Math.PI));
+  });
+
+````
 # Options
 
 ## assign
@@ -105,6 +113,11 @@ Provides a module in the namespace with the given key.
 If passthrough is set, the object will be just passed through, no dependencies
 are looked up this way.
 
+### $provideValue(key, object)
+
+Provides a value in the namespace with the given key (shortcut for $provide
+using passthrough).
+
 ### $resolve()
 
 Resolves the dependency graph.
@@ -112,14 +125,28 @@ Resolves the dependency graph.
 This method might take a callback function (in case of the default
 CallbackMethod) or return a promise with PromiseMethod.
 
-### Di.$set(id, value)
+### $annotate(classFn)
+
+Returns a class which will be initialized with the dependencies stated in
+classFn's constructor. When classFn is a function, its parameters are being
+resolved to matching dependencies.
+
+This method must called after $resolve().
+
+### $set(id, value)
 
 Sets a value in the namespace, specified by a dot-delimited path.
 
 # Resolution methods
 
 By default, dijs uses the asynchronous CallbackMethod in order to resolve
-dependencies.
+dependencies. Require them as follwing:
+
+````js
+const Di = require('dijs');
+const SyncMethod = require('dijs/methods/sync');
+const PromiseMethod = require('dijs/methods/promise');
+````
 
 ## CallbackMethod
 
@@ -195,6 +222,7 @@ Note: You cannot inject dot-delimited dependencies with this notation.
   var mod = new Di();
   mod.$provide('Pi',Math.PI, true);
   mod.$provide('2Pi', function (Pi, callback) { callback(null, return 2*Pi); });
+  // ...
 ````
 
 ### array notation (minification-safe)
@@ -210,7 +238,38 @@ module function.
   mod.$provide('2Pi', ['Math.Pi', function (Pi, callback) {
     callback(null, 2*Pi);
   }]);
+  // ...
 ````
+
+#### notation with "$inject" (minification-safe)
+
+An alternative way is to provide a "$inject" property when using $annotate or
+$provide. This requires minification tools being in use not to mangle this key:
+
+````js
+
+  class TestClass {
+    constructor (pi) {
+      this.RAD_TO_DEG = (180 / pi);
+    }
+
+    deg (value) {
+      return value * this.RAD_TO_DEG;
+    }
+  }
+
+  TestClass['$inject'] = ['PI'];
+
+  var mod = new Di();
+  mod.$provideValue('PI', Math.PI);
+  mod.$resolve((err) => {
+    if (err) { throw err; }
+    let WrappedTestClass = mod.$annotate(TestClass);
+    let instance = new WrappedTestClass();
+    console.log(instance.deg(Math.PI * 2)); // 360
+  });
+
+  ````
 
 # Namespacing
 
@@ -238,4 +297,4 @@ You can create a minified build with Google's Closure compiler by running
 
 # License
 
-MIT
+MIT (see LICENSE)

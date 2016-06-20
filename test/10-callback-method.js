@@ -33,6 +33,18 @@ describe('CallbackMethod', () => {
     });
   });
 
+  it('$provideValue using defaultFunction', (done) => {
+    let d = new Di(CallbackMethod, null);
+    d.$provideValue('PI', Math.PI);
+    d.$resolve((err) => {
+      if (err) {
+        return done(err);
+      }
+      assert.equal(d.$get('PI'), Math.PI);
+      done();
+    });
+  });
+
   it('throws an error when no callback was provided', () => {
     assert.throws(() => {
       let d = new Di(CallbackMethod, null);
@@ -261,6 +273,31 @@ describe('CallbackMethod', () => {
       }
       let order = d.$inject((PI) => PI * 2);
       assert.equal(order, Math.PI * 2);
+      done();
+    });
+  });
+
+  it('$annotate', (done) => {
+    let d = new Di(CallbackMethod);
+    d.$provide('PI', Promise.resolve(Math.PI));
+    d.$provideValue('RAD_TO_DEG', (180 / Math.PI));
+    d.$resolve((err) => {
+      if (err) {
+        return done(err);
+      }
+      class TestClass {
+        constructor (PI, RAD_TO_DEG) {
+          this.PI = PI;
+          this.RAD_TO_DEG = RAD_TO_DEG;
+        }
+
+        deg (value) {
+          return value * this.RAD_TO_DEG;
+        }
+      }
+      let AnnotatedTestClass = d.$annotate(TestClass);
+      let a = new AnnotatedTestClass();
+      assert.equal(a.deg(Math.PI), 180);
       done();
     });
   });

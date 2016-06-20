@@ -33,6 +33,7 @@ class CallbackMethod {
 
   /**
    * @method $resolve
+   * @chainable
    * @param {object[]} queue
    */
 
@@ -53,6 +54,8 @@ class CallbackMethod {
     }
     let items = Resolver.resolveQueue(queue);
     next();
+
+    return this._root;
 
     /**
      * @method next

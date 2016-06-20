@@ -16,6 +16,13 @@ var Di = function (Method, name, options) {};
 Di.prototype.$provide = (key, fn, passthrough) => {};
 
 /**
+ * @param {string} key
+ * @param {*} fn
+ */
+
+Di.prototype.$provideValue = (key, fn) => {};
+
+/**
  * @param {*}
  * @return {*}
  */
@@ -42,6 +49,12 @@ Di.prototype.$get = (key) => {};
  */
 
 Di.prototype.$set = (key, value) => {};
+
+/**
+ * @param {*} fn
+ */
+
+Di.prototype.$annotate = (fn) => {};
 
 /**
  * @constructor

@@ -1,5 +1,13 @@
 # Changelog
 
+0.2.1 - 06/??/2016
+
+  - additional minification-safe syntax using $inject property
+  - adding $annotate
+  - adding $provideValue shortcut
+  - making $resolve chainable again (not available for PromiseMethod)
+  - Updating package dependencies
+
 0.2.0 - 06/07/2016
 
   - ES2015 rewrite
