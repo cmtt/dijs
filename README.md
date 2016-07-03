@@ -24,7 +24,7 @@ It is inspired by [AngularJS](http://www.angularjs.org/) 1.x and allows to
 choose between synchronous and asynchronous (using callbacks and promises)
 resolution patterns in an non-opinionated way.
 
-Featured on [DailyJS](http://dailyjs.com/2014/05/25/angular-roundup/)
+Featured on [DailyJS](http://dailyjs.com/2014/05/25/angular-roundup/).
 
 # Example
 
@@ -47,7 +47,9 @@ Featured on [DailyJS](http://dailyjs.com/2014/05/25/angular-roundup/)
   // The $provide and $resolve method expect callback functions.
 
   let instance = new Di(null)
+  // Provides a constant
   .$provideValue('PI', Math.PI)
+  // Providing a constant using dependencies
   .$provide('RAD_TO_DEG', (PI, callback) => callback(null, (180 / PI)))
   .$resolve((err) => {
     if (err) {
@@ -94,6 +96,14 @@ default one).
 
 ## Instance methods
 
+### $annotate(classFn)
+
+Returns a class which will be initialized with the dependencies stated in
+classFn's constructor. When classFn is a function, its parameters are being
+resolved to matching dependencies.
+
+This method must called after $resolve().
+
 ### $get(id)
 
 Returns the (previously provided) sub-module specified by a dot-delimited id.
@@ -124,14 +134,6 @@ Resolves the dependency graph.
 
 This method might take a callback function (in case of the default
 CallbackMethod) or return a promise with PromiseMethod.
-
-### $annotate(classFn)
-
-Returns a class which will be initialized with the dependencies stated in
-classFn's constructor. When classFn is a function, its parameters are being
-resolved to matching dependencies.
-
-This method must called after $resolve().
 
 ### $set(id, value)
 

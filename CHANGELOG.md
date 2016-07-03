@@ -1,6 +1,6 @@
 # Changelog
 
-0.2.1 - 06/??/2016
+0.2.1 - 07/03/2016
 
   - additional minification-safe syntax using $inject property
   - adding $annotate
